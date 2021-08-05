@@ -1,0 +1,29 @@
+; title    = Energy minimization for peptide in vacuum ; The mdp entry is obsolete
+; cpp      = /usr/bin/cpp           ; Preprocessor     ; The mdp entry is obsolete
+; define   = -DFLEXIBLE             ; include flexible water
+
+
+integrator      = steep           ; Steepest descent minimization
+emtol           = 10.0            ; Stop minimization when maximum force < 10.0 KJ/mol/nm
+nsteps          = 50000           ; Maximum number of minimization steps
+nstcalcenergy   = 1               ; Frequency to calculate the energies
+nstenergy       = 1               ; Frequency to write energies to energy file, the value
+                                  ; should be a multiple of nstcalcenergy, the default of nstcalcenergy
+                                  ; is 100, so it should be set explicitly.
+energygrps      = System          ; Which energy group(s) to write to energy file
+
+
+cutoff-scheme   = group		      ; verlet doesn't work inside a vacuum
+nstlist         = 0               ; Frequency to update neighbor list
+ns_type         = simple          ; Method to determine neighbor list
+coulombtype     = Cut-off         ; Treatment of long range electrostatic interaction 
+vdwtype         = Cut-off         ; Treatment of long range VdW interaction
+rcoulomb        = 999.0           ; Long range electrostatic cut-off 
+rvdw            = 999.0           ; Long range Van der Waals cut-off
+rlist           = 999.0           ; Cut-off distance for the short-range neighbor list
+                                  ; With the verlet cutoff scheme, rlist is by default set by the 
+                                  ; verlet-buffer-tolerance option and the value of rlist is ignored
+				                  ; rlist is needed when using group cutoff-scheme 
+
+constraints     = none            ; Bond types to replace by constraints
+pbc             = no              ; No periodic boundary conditions 

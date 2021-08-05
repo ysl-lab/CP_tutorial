@@ -1,0 +1,67 @@
+;title    = Equilibration at NPT ensemble without constraint   ; The mdp entry is obsolete
+
+
+; Run control
+integrator      = md              ; Leap-from integrator 
+dt              = 0.002           ; Time step (ps)
+nsteps          = 50000           ; Simulation time 100 ps
+
+
+; Output control
+nstxout         = 5000            ; Frequency to write coordinates to trajectory file
+nstvout         = 5000            ; Frequency to write velocities to trajectory file
+;nstxtcout       = 5000            ; Frequency to write coordinates to XTC trajectory (obsolete)
+nstxout-compressed = 5000        ; Frequency to write coordinates to XTC trajectory
+nstenergy       = 5000            ; Frequency to write energies to energy file, note the value should be a multiple of nstcalcenergy (default 100)
+nstlog          = 5000            ; Frequency to write energies to log file
+energygrps      = System          ; Which energy group(s) to write to energy file
+
+
+; Bond parameters
+continuation    = yes             ; Restarting after NVT 
+constraint_algorithm = lincs      ; Holonomic constraints
+constraints     = all-bonds       ; All bonds are constrained
+lincs_iter      = 1               ; Accuracy of LINCS 
+lincs_order     = 4               ; Also related to accuracy
+
+
+; Neighbor searching
+cutoff-scheme   = Verlet
+ns_type         = grid            ; Method to determine neighbor list
+nstlist         = 10               ; Frequency to update neighbor list
+pbc             = xyz             ; Periodic boundary conditions in all directions
+
+
+; Electrostatic interation
+coulombtype     = PME             ; Treatment of long range electrostatic interaction 
+rcoulomb        = 1.0             ; Long range electrostatic cut-off (nm) 
+
+
+; VdW interaction 
+vdwtype         = cut-off         ; Twin-range cut-off with rlist where rvdw >= rlist
+rvdw            = 1.0             ; Long range Van der Waals cut-off (nm)
+DispCorr        = EnerPres        ; Apply long range dispersion correction for energy and pressure
+
+
+; Ewald 
+fourierspacing  = 0.12            ; Grid spacing for FFT grid when using PME
+pme_order       = 4               ; Interpolation order for PME, 4 = cubic
+ewald_rtol      = 1e-5            ; Relative strength of Ewald-shifted potential at rcoulomb
+
+
+; Temperature regulation
+tcoupl          = v-rescale       ; Modified Berendsen thermostat
+tc-grps         = Protein Non-Protein ; Two coupling groups - more accurate
+tau_t           = 0.1  0.1        ; time constant for coupleing (ps)
+ref_t           = 300.0 300.0       ; Reference temperature, one for each group, in K
+
+
+; Pressure coupling is on 
+pcoupl          = Parrinello-Rahman  ; Pressure regulation method
+pcoupltype      = isotropic          ; Uniform scaling of box vectors
+tau_p           = 2.0                ; Time constant (ps)
+ref_p           = 1.0                ; Reference pressure (bar)
+compressibility = 4.5e-5             ; Isothermal compressibility of water, bar^-1
+
+; Velocity generation
+gen_vel         = no                 ; Velocity generation is off
