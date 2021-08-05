@@ -1,0 +1,50 @@
+# s0 legend "LJ (SR)"
+# s1 legend "Disper. corr."
+# s2 legend "Coulomb (SR)"
+# s3 legend "Coul. recip."
+# s4 legend "Potential"
+# s5 legend "Kinetic En."
+# s6 legend "Total Energy"
+# s7 legend "Temperature"
+# s8 legend "Pres. DC"
+# s9 legend "Pressure"
+# s10 legend "Box-X"
+# s11 legend "Box-Y"
+# s12 legend "Box-Z"
+# s13 legend "Volume"
+# s14 legend "Density"
+# s15 legend "pV"
+# s16 legend "Enthalpy"
+# s17 legend "Vir-XX"
+# s18 legend "Vir-XY"
+# s19 legend "Vir-XZ"
+# s20 legend "Vir-YX"
+# s21 legend "Vir-YY"
+# s22 legend "Vir-YZ"
+# s23 legend "Vir-ZX"
+# s24 legend "Vir-ZY"
+# s25 legend "Vir-ZZ"
+# s26 legend "Pres-XX"
+# s27 legend "Pres-XY"
+# s28 legend "Pres-XZ"
+# s29 legend "Pres-YX"
+# s30 legend "Pres-YY"
+# s31 legend "Pres-YZ"
+# s32 legend "Pres-ZX"
+# s33 legend "Pres-ZY"
+# s34 legend "Pres-ZZ"
+# s35 legend "#Surf*SurfTen"
+# s36 legend "T-System"
+# s37 legend "Lamb-System"
+
+# PE2 should be defined that its value closes to PE, otherwise, the program crashes
+PE = Potential
+PE2 =  LJ (SR) + Disper. corr. + Coulomb (SR) + Coul. recip. 
+LJ = LJ (SR) + Disper. corr.
+LJsr = LJ (SR) 
+LJlr = Disper. corr.
+EE = Coulomb (SR) + Coul. recip.
+EEsr = Coulomb (SR) 
+EElr = Coul. recip.
+Nonbonded = LJ (SR) + Disper. corr. +  Coulomb (SR) + Coul. recip.
+PV = pV

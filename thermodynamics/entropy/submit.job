@@ -1,0 +1,24 @@
+#!/bin/bash
+#SBATCH -p mpi
+#SBATCH -N 1 -n 1
+#SBATCH --account=normal
+#SBATCH --ntasks-per-core=1
+#SBATCH -J Entropy 
+#SBATCH -o runout.%j
+#SBATCH -e runerr.%j
+#SBATCH -t 7-00:00:00
+#SBATCH --export=ALL
+
+# Specify how many MPI processes and how many threads per process you would like to use (in compliance with the above requested)
+export MPI_NUM_PROCS=1
+export OMP_NUM_THREADS=1
+module load openmpi/1.8.2
+
+
+# Navigate to the current working directory and start to compile and run the programs
+#cd $PBS_O_WORKDIR
+bash ../run.sh parameters
+
+
+
+
