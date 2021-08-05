@@ -1,0 +1,14 @@
+#!/bin/bash
+#SBATCH -p m4
+#SBATCH --account=yushan --qos=yushan
+#SBATCH -n 8
+#SBATCH --ntasks-per-core=1
+#SBATCH -J rerun
+#SBATCH -o runout.%j
+#SBATCH -e runerr.%j
+#SBATCH -t 7-00:00:00
+#SBATCH --export=ALL
+
+XTC=TEMPXTC
+
+mdrun_mpi -v -rerun $XTC -s rerun.tpr -deffnm rerun
