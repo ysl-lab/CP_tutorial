@@ -1,0 +1,183 @@
+Program written by Aidan Fike, July 2019
+Updated by Kevin Schult, 2020, with help from Tim, Omeir, and Jovan
+
+NOTE: To successfully run this program on the cluster, you will need to
+activate the correct Python environment from a conda installation.
+See details below.
+
+If this is your first time using this script, please see the
+CLUSTER SETUP section below before using.
+
+Run this script on an "interactive" cluster node to avoid slowing down the
+login node.
+
+ORDER TO LOAD MODULES FOR SCRIPT:
+        (1) Load anaconda/3 using "module load anaconda/3
+	(2) Load python and MDAnalysis using "source activate [env_name]"
+            where [env_name] is mda3 if you're using Kevin's setup
+            or the name of your environment in your personal setup
+
+AFTER SCRIPT IS RUN:
+	Purge python and MDAnalysis using "source deactivate"
+	Purge other modules at your discretion
+
+USAGE: To use this program run:
+
+    python main.py [-flag argument] [-flag argument] [-flags]
+
+    Where [-flag] is one of the below:
+
+	-seq | Takes an argument of a string of upper- and lowercase letters to be
+		the cyclic peptide sequence.
+
+	-randseq | Takes an integer argument. Instructs the program to randomly
+		generate a cyclic peptide sequence of that length.
+		Only (G, A, V, F, S, N, R, D) will be used for random sequences.
+
+	-n | Takes an integer argument that indicates the number of distinct initial
+	  	structures to generate. Set to 2 by default.
+
+	-bonds | Takes an argument of a string of 't's and 'c's that specify whether
+		the peptide bond at the corresponding location should be cis or trans.
+                See examples. All trans by default.
+
+	-thresh | Takes a floating point argument. Structures will be generated
+		until enough of them are -thresh angstroms different in RMSD.
+
+	-maxTries | Takes an integer argument. If -maxTries structures have been
+		generated without creating an acceptable output set, the script
+		will terminate.
+
+	-includeOxygen | Takes no argument. By default, this script
+		calculates RMSD between the (C,CA,N) atoms of each structure.
+		This optional flag will tell the script to use (C,CA,N,O) atoms
+		in calculating RMSD.
+
+	-h | Takes no argument. Displays help text, then terminates the script.
+
+        -v | Takes no argument. Tells the script to produce verbose output.
+
+        -debug | Takes no argument. Tells the script to produce all intermediate structures.
+
+    Note that the script requires -thresh and one of -seq or -randseq to run.
+    -maxTries is 20 by default. -n is 2 by default. When -bonds is not set, all
+    peptide bonds are trans.
+
+    A couple examples are:
+        For a random 8mer, generate 2 structures with a minimum rmsd of 1.9A 
+	that includes oxygen in rmsd calculation:
+            python main.py -randseq 8 -thresh 1.9 -includeOxygen
+
+        For a desired sequence, GNSRVGGGGG, generate 4 strucutres in 30 attempts 
+        with a minimum rmsd of 3.0A:
+            python main.py -seq GNSRVGGGGG -n 4 -thresh 3.0 -maxTries 30
+
+	For a desired sequence, EasESLCGG with a cis bond between the 3rd and 4th residues,
+        generate 3 strucutres in 50 attempts with a minimum rmsd of 2.1A:
+            python main.py -seq EasESLCGG -bonds ttctttttt -n 3 -thresh 2.1 -maxTries 50
+
+    Note that if your desired structure contains cis peptide bonds, there is no
+    guarantee that this script will be able to produce a complete set of such structures
+    due to cis peptide bonds being generally less energetically favorable than trans.
+
+CLUSTER SETUP: This script is dependent on Chimera, Python 3.7, and 
+the Python package MDAnalysis. The Chimera executable is accessed directly from Tim's
+working directory, but Python and MDAnalysis should be loaded through the Anaconda cluster module.
+
+There's two ways to get access to Python and MDAnalysis using conda: the quick and dirty way,
+or the "make your own installation" way.
+
+	QUICK AND DIRTY:
+	Copy the .condarc file Kevin has stored in /cluster/tufts/ylin12_2/KevinSchult/ to your
+        home directory. This tells conda to look for the Python environments Kevin's installed
+        in /cluster/tufts/ylin12_2/KevinSchult/conda.
+        Start an interactive cluster job, load the modules in the order described at the top
+        of this file, and run the script.
+
+        MAKE YOUR OWN INSTALLATION:
+        See the following instructions from TTS:
+	
+	1. start an interactive session on the cluster on a compute node
+		$ srun -p interactive -n 4 --mem=16g --pty bash
+
+	2. load anaconda module
+		$ module load anaconda/3
+
+	3. customize your own conda environment configuration:
+		Since you have limited amount of storage in your home directory, 
+		we do not suggest you install the packages there. As you belong 
+		to XXXX group on the cluster, please use the group research storage 
+		for the purpose.
+		Create two directories in your group research storage space 
+		(one for storing the envs, one for storing the pkgs, for example: condaenv, condapkg)
+
+		If you haven't used conda before on the cluster, create a file named ".condarc" in your home directory.
+
+		Now add the following 4 lines to the .condarc file 
+		(modify according to your real path to the directories):
+			envs_dirs:
+			- /cluster/tufts/XXXX/$USER/condaenv/
+			pkgs_dirs:
+			- /cluster/tufts/XXXX/$USER/condapkg/
+		Or you can do so from command line with the following commands 
+		(only add 4 lines to the .condarc file OR use these commands, not both)
+			$ conda config --append envs_dirs /cluster/tufts/XXXX/$USER/condaenv/
+			$ conda config --append pkgs_dirs /cluster/tufts/XXXX/$USER/condapkg/
+
+		Then add channels to your conda config as well (here are only 2, but you can add more you need):
+			$ conda config --add channels bioconda
+			$ conda config --add channels conda-forge
+
+	4. Now you can create your own conda env
+		$ cd /cluster/tufts/XXXX/$USER/condaenv/
+		$ conda create -p yourenvname python=3.7
+
+	5. activate the environment
+		$ source activate yourenvname (Kevin used mda3 as his env name)
+
+	6. install yourpackage in the conda env
+		$ conda install -c conda-forge mdanalysis
+
+	7. test
+
+	8. When you are done, deactivate the env
+		$ source deactivate 
+
+	Now, start an interactive cluster job if you haven't already, load the
+        modules in the order described at the top of this file, and run the script.
+
+ORDER TO LOAD MODULES FOR SCRIPT:
+        (1) Load anaconda/3 using "module load anaconda/3
+	(2) Load python and MDAnalysis using "source activate mda3"
+
+AFTER SCRIPT IS RUN:
+	Purge python and MDAnalysis using "source deactivate"
+	Purge other modules at your discretion
+
+PROGRAM DESCRIPTION:
+    This program is made to ease the process of running BE-Meta simulations. 
+    In these simulations, to confirm convergence, it is necessary to run multiple 
+    simulations starting with different initial structures. This program automates
+    the process of creating an arbitrary number of initial structures. To do so,
+    once a desired sequence is chosen, many potential initial structures are created
+    using Chimera. These potential structures have their omega angles measured, and
+    any structures with incorrect peptide bonds are removed from consideration.
+    With the remaining structures, a backbone-aligned rmsd is then calculated
+    between each pair of structures. The first complete set of structures with 
+    acceptably large rmsd is then chosen to be the set of initial structures.
+
+    The program begins by using Chimera to generate a structure, which is then 
+    checked for incorrect chiralities using Chimera and incorrect omega angles
+    using MDAnalysis. If there is an incorrect chirality, that residue is 
+    inverted; if there is an incorrect omega angle, the structure is thrown out.
+    After each generation of a valid structure, the rmsd between this structure
+    and the other valid structures is calculated using MDAnalysis. Then, NetworkX
+    (which comes with MDAnalysis) is used to determine whether a complete set
+    of structures with large enough rmsd values has been generated. If so, the
+    script ends and outputs those structures; if not, another structure
+    generation is attempted. If a complete set isn't generated within a certain
+    number of generation attempts, the script is paused, and the user is
+    presented with options for how to proceed. The user may request more
+    attempts, terminate while saving valid structures, or terminate without
+    saving valid structures.
+    
