@@ -1,0 +1,103 @@
+#!/bin/bash
+#
+# This file is part of the GROMACS molecular simulation package.
+#
+# Copyright (c) 2013,2014,2015, by the GROMACS development team, led by
+# Mark Abraham, David van der Spoel, Berk Hess, and Erik Lindahl,
+# and including many others, as listed in the AUTHORS file in the
+# top-level source directory and at http://www.gromacs.org.
+#
+# GROMACS is free software; you can redistribute it and/or
+# modify it under the terms of the GNU Lesser General Public License
+# as published by the Free Software Foundation; either version 2.1
+# of the License, or (at your option) any later version.
+#
+# GROMACS is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public
+# License along with GROMACS; if not, see
+# http://www.gnu.org/licenses, or write to the Free Software Foundation,
+# Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA.
+#
+# If you want to redistribute modifications to GROMACS, please
+# consider that scientific software is very special. Version
+# control is crucial - bugs must be traceable. We will be happy to
+# consider code for inclusion in the official distribution, but
+# derived work must not be called official GROMACS. Details are found
+# in the README & COPYING files - if they are missing, get the
+# official version at http://www.gromacs.org.
+#
+# To help us fund GROMACS development, we humbly ask that you cite
+# the research papers on the package. Check out http://www.gromacs.org.
+
+# This script is intended as a pre-commit hook that optionally runs all
+# changes through some formatting check.  Currently, it runs uncrustify and
+# checks copyright headers.
+#
+# It needs to be copied as .git/hooks/pre-commit and configured with
+#   git config hooks.uncrustifypath /path/to/uncrustify
+#   git config hooks.uncrustifymode check
+#   git config hooks.copyrightmode update
+#
+# To disable the hook temporarily for a commit, set NO_FORMAT_CHECK environment
+# variable.  For example,
+#   NO_FORMAT_CHECK=1 git commit -a
+# You can also run git commit --no-verify, but that also disables other hooks,
+# such as the Change-Id hook used by Gerrit.
+#
+# See docs/dev-manual/uncrustify.rst for more details.
+
+if [ ! -z "$NO_FORMAT_CHECK" ]
+then
+    exit 0
+fi
+
+if git rev-parse --verify HEAD >/dev/null 2>&1
+then
+    against=HEAD
+else
+    # Initial commit: diff against an empty tree object
+    against=4b825dc642cb6eb9a060e54bf8d69288fbee4904
+fi
+
+# Redirect output to stderr.
+exec 1>&2
+
+uncrustify_mode=`git config hooks.uncrustifymode`
+copyright_mode=`git config hooks.copyrightmode`
+if [ -z "$uncrustify_mode" ]
+then
+    uncrustify_mode=off
+fi
+if [ -z "$copyright_mode" ]
+then
+    copyright_mode=off
+fi
+
+if [[ -f admin/uncrustify.sh && \
+      ( "$uncrustify_mode" != "off" || "$copyright_mode" != "off" ) ]]
+then
+    if [ "$uncrustify_mode" != "off" ]
+    then
+        uncrustify_path=`git config hooks.uncrustifypath`
+        if [ -z "$uncrustify_path" ]
+        then
+            echo "Please set the path to uncrustify using 'git config hooks.uncrustifypath'."
+            echo "Note that you need a custom version of uncrustify."
+            exit 1
+        fi
+        export UNCRUSTIFY="$uncrustify_path"
+    fi
+    admin/uncrustify.sh check-index --rev=$against \
+        --uncrustify="$uncrustify_mode" --copyright="$copyright_mode"
+    stat=$?
+    if [ $stat -eq 1 ] ; then
+        exit 1
+    elif [ $stat -ne 0 ] ; then
+        echo "Source code formatting check failed"
+        exit 1
+    fi
+fi

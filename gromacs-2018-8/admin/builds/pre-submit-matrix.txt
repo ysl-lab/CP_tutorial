@@ -1,0 +1,88 @@
+# Comment line(s) preceding each configuration document the main
+# intent behind that configuration, so that we can correctly judge
+# whether to preserve that during maintenance decisions.
+#
+# Other configurations might coincidentally test such configurations
+# (e.g. because they are the current default), but it is appropriate
+# to intend to teach each feature (or a feature combination) exactly
+# once, and for the intent to be reflected precisely in the
+# configuration syntax, so that the configurations are stable even
+# if the defaults change in future.
+#
+# The phrase "at time of release" refers to either the initial
+# GROMACS release from that branch, or the next expected release
+# from that branch. (We will tend not to retroactively support
+# newer infrastructure in CI, unless it's either easy or of
+# high impact.)
+
+# Test older gcc
+# Test oldest supported CUDA
+# Test oldest supported Ubuntu
+# Test MPI with CUDA
+# Test cmake version from before new FindCUDA support (in 3.8)
+# Test MPMD PME with library MPI
+gcc-4.8 gpu cuda-6.5 cmake-3.6.1 mpi npme=1 nranks=2 openmp
+
+# Test newest gcc supported by newest CUDA at time of release
+# Test thread-MPI with CUDA
+# Test cmake FindCUDA functionality introduced in 3.8
+# Test SIMD implementation of pair search for GPU code-path
+gcc-6 gpu cuda-9.0 thread-mpi openmp cmake-3.8.1 release-with-assert simd=avx2_256
+
+# Test newest cmake at time of release
+# Test with ThreadSanitizer (compiled without OpenMP, even though
+#   this gcc was configured with --disable-linux-futex, because
+#   Redmine #1850 is unresolved, which causes more suspected
+#   false positives than races detected)
+# Test fftpack fallback
+gcc-7 tsan no-openmp fftpack cmake-3.10.0
+
+# Test newest gcc at time of release
+# Test gcc in double precision
+# Test 128-bit SIMD in double precision (to cover SimdInt32 support better)
+gcc-7 double mpi simd=avx_128_fma
+
+# Test X11 build
+gcc-7 x11
+
+# Test oldest supported cmake
+# Test older clang
+# Test clang in double precision
+# Test without OpenMP
+# Test thread-MPI
+# Test AVX_128_FMA SIMD + Double (Important for Simd4N=Simd4 and sizeof(SimdInt32)!=4*GMX_SIMD_REAL_WIDTH)
+clang-3.4 double simd=avx_128_fma thread-mpi no-openmp fftpack cmake-3.4.3
+
+# Test newest clang at time of release
+# Test with AddressSanitizer (without OpenMP, see below)
+clang-5 no-openmp asan
+
+# Test oldest supported MSVC on Windows
+# Test newest supported MSVC on Windows
+msvc-2015 openmp release-with-assert
+
+# Test newest icc at the time of release
+# Test icc without SIMD in double precision in release mode
+# Test MKL
+# Test without any MPI
+# Test on CentOS (because cmake-3.9.6 is available there)
+icc-18 no-thread-mpi double openmp mkl cmake-3.9.6 simd=none release
+
+# Test NVIDIA OpenCL
+# Test MPI + OpenCL
+# Test AVX2_256 SIMD
+# Test icc with SIMD in mixed precision in release mode
+icc-18 openmp opencl cuda-7.5 mpi release simd=avx2_256 no-hwloc
+
+# Test AMD OpenCL
+# Test AVX_128_FMA SIMD
+gcc-5 openmp simd=avx_128_fma opencl amdappsdk-3.0
+
+# TODO
+# Add OpenMP support to ASAN build (but libomp.so in clang-4 reports leaks, so might need a suitable build or suppression)
+# Test hwloc support
+# Test newest supported LTS Ubuntu
+# Update gpu testing specifiers per https://redmine.gromacs.org/issues/2161
+# Resolve Redmine #1850 so that ThreadSanitizer can test our OpenMP code
+# Support icc 17
+# Test AVX-512 when hardware is available
