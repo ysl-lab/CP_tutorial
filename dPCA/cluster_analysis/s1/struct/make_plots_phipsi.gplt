@@ -1,0 +1,153 @@
+#!/usr/bin/env gnuplot
+
+# Make multiple plots from different files
+# This script is used to plot 1D free energy profiles for two different
+# initial configurations.
+
+mpl_top      = 0.5    #inch  outer top margin, title goes here
+mpl_bot      = 1.0    #inch  outer bottom margin, x label goes here
+mpl_left     = 0.9    #inch  outer left margin, y label goes here
+mpl_right    = 0.2    #inch  outer right margin, y2 label goes here
+mpl_height   = 3.0    #inch  height of individual plots
+mpl_width    = 3.0   #inch  width of individual plots
+mpl_dx       = 0.8    #inch  inter-plot horizontal spacing
+mpl_dy       = 0.8    #inch  inter-plot vertical spacing
+mpl_nx       = 8     #number of columns 
+mpl_ny       = 1     #number of rows
+num_plots=8
+
+rad_to_deg=57.295779
+cal_to_joule=4.184
+xfact = 1
+yfact = 1
+line_width=7
+point_size=5
+ymin=-180
+ymax=180
+
+# calculate full dimensions
+xsize = mpl_left + mpl_right + (mpl_width*mpl_nx) + (mpl_nx-1)*mpl_dx
+ysize = mpl_top  + mpl_bot + (mpl_height*mpl_ny) + (mpl_ny-1)*mpl_dy
+
+# placement functions
+#   rows are number from bottom to top
+bot(n) = (mpl_bot + (n-1)*mpl_height + (n-1)*mpl_dy)/ysize
+top(n)  = 1-((mpl_top+(mpl_ny-n)*(mpl_height+mpl_dy))/ysize)
+#   columns are numbered from left to right
+left(n) = (mpl_left + (n-1)*mpl_width + (n-1)*mpl_dx)/xsize
+right(n) = 1-((mpl_right + (mpl_nx-n)*(mpl_width+mpl_dx))/xsize)
+
+
+set terminal postscript eps enhanced color dl 2.0 size xsize,ysize "Helvetica" 36
+#set encoding iso_8859_1
+set tics scale 1.5
+#set label "Phi/Psi angles of cNPF cyclic peptide" at screen 0.5*(left(1)+right(mpl_nx)), screen 0.5*(1+top(mpl_ny)) center
+set output "phipsi.eps" 
+
+#set offsets
+#set autoscale fix
+#set size 1,1
+set nokey
+
+
+# define x-axis setting for all subplots
+set xrange [-180:180]
+set xlabel ''              
+set format x '%4.0f'  
+set xtics 90           
+set mxtics 2           #number of minor tics between major tics
+
+# define y-axis setting for all subplots
+set yrange [-180:180]
+set ytics 90 
+set mytics 2
+# A univerisal Y label
+#x0 = left(1)*0.3
+#y0 = 0.5*(bot(1) + top(mpl_ny))
+#set label "{/Symbol y} (degrees)" at screen x0, y0 center rotate 
+
+
+set border linewidth 2
+
+set palette defined ( 0 '#000090',\
+1 '#000fff',\
+2 '#0090ff',\
+3 '#0fffee',\
+4 '#90ff70',\
+5 '#ffee00',\
+6 '#ff7000',\
+7 '#ee0000',\
+8 '#7f0000')
+set cbrange [1:NS]
+unset colorbox
+
+# start plotting
+set multiplot
+
+do for [ix=1:mpl_nx] {
+  do for [iy=1:mpl_ny] {
+    # set horizontal margins for *ix* column
+    set lmargin at screen left(ix)
+    set rmargin at screen right(ix)
+    # set vertical margins for *iy* row 
+    set tmargin at screen top(iy)
+    set bmargin at screen bot(iy)
+
+    if ( ix==1) {
+      label_txt=sprintf("State %s", IS)
+      set ylabel label_txt 
+      set format y "%2.0f"
+    } else {
+      set ylabel   ""
+      set format y ""  #no tics label
+    }
+ 
+    if ( iy==1) {
+#      set format x "%2.0f"
+    } else {
+#      set xlabel ""
+#      set format x ""  #no tics label
+    }
+
+    ip = (iy-1)*(mpl_nx) + ix
+
+    if ( ip <= num_plots) {
+      set xlabel sprintf("{/Symbol f}_%d", ip)
+      set ylabel sprintf("{/Symbol y}_%d", ip)
+      set yrange [ymin:ymax]
+      
+      idx=ip*2-1
+      idy=ip*2
+      plot INPUT u (column(idx)*xfact):(column(idy)/yfact) w p pt 7 ps 1 lc palette cb IS lt 1 ,\
+           "phipsi_cNPF_NMR.txt"  u (column(idx)*xfact):(column(idy)/yfact) w p pt 7 ps point_size lc rgb "#000000" 
+    }
+  }
+}
+
+
+
+# Now we set one legend for multiple plots
+unset origin
+unset border
+unset tics
+unset label
+unset xlabel
+unset arrow
+unset title
+unset ylabel
+unset object
+
+# Now, set the size of this plot to something BIG
+set size 3, 3 
+set key box
+#set key horizontal reverse samplen 1 width 4 maxrows 1 maxcol $NLINES 
+set key vertical reverse samplen 1 width 4 maxrows 1 maxcol 2 
+set key at screen 0.5, screen bot(1)*0.3 center top
+set xrange [-1:1]
+set yrange [-1:1]
+#plot NaN w lp lw line_width ps point_size pt 7 lc rgb "#9ACD32" lt 1 
+#plot NaN w p pt 7 ps point_size lc rgb "#2E8E00" title "State 0" ,\
+#     NaN w p pt 7 ps point_size lc rgb "#000000" title "NMR" 
+
+unset multiplot
+
