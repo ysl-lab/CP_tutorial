@@ -1,0 +1,13 @@
+#!/bin/bash
+#SBATCH -p m4
+#SBATCH -n 1
+#SBATCH --account=yushan
+#SBATCH --qos=yushan
+#SBATCH --ntasks-per-core=1
+#SBATCH -J analysis 
+#SBATCH -o runout.%j
+#SBATCH -e runerr.%j
+#SBATCH -t 3-00:00:00
+ 
+bash driver.sh 
+

@@ -1,0 +1,13 @@
+#!/bin/bash
+#SBATCH -p mpi
+#SBATCH -n 8
+#SBATCH --account=normal
+#SBATCH --qos=normal
+#SBATCH --ntasks-per-core=1
+#SBATCH -J traj_clus
+#SBATCH -o runout.%j
+#SBATCH -e runerr.%j
+#SBATCH -t 7-00:00:00
+#SBATCH --export=ALL
+
+bash driver.sh
