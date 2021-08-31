@@ -1,0 +1,286 @@
+Checklist/TIPS for Running and Analyzing GROMACS Simulations
+ 
+Initializing Structures:
+Whether you're generating your initial structures using genInit or similar or putting them together manually in Chimera, check your completed structure in VMD or Chimera for:
+	- Correct peptide sequence and protonation states
+	- Correct peptide bond configurations (cis/trans)
+	- Correct chirality for each residue
+	- No bizarre / incorrect bond lengths, connectivities, missing bonds, etc.
+Note: When manually aligning two initial structures s1 and s2 in VMD to calculate backbone RMSD, ensure that corresponding residues are being aligned and visually check to see that the backbones of both structures differ from one another when aligned.
+ 
+Checking Force Field Information when Modifying Topologies:
+Using a non-default force field (RSFF2) on systems GROMACS isn't prepared for (cyclic peptides) involves some manual edits of parameter and configuration files, at your own risk. When prepping your GROMACS library for a cyclic peptide simulation in RSFF2,
+	- Check your aminoacids.rtp file in your modified amber99sb directory to ensure that parameters have been created for terminal residues
+	- Check specbonds.dat in your personal GROMACS library to make sure that the bond between terminal residues is listed
+	- Verify that GROMACS is using the correct library by checking your .bashrc file or by using the command "echo $GMXLIB"
+	- Within your RSFF2.itp, check that FudgeQQ = 1.0
+
+When prepping cyclic peptide topology files for use in GROMACS,
+	- When adding improper dihedrals, label the change you made with a comment
+		- e.g. "59 1 71 72 ;added by YSL_Group_Member"
+	- Check that the correct atoms were used when adding improper dihedrals to your topology by matching the atom types and atom IDs to those that were commented out in the aminoacids.rtp file for the corresponding terminal residue
+		- NOTE: Improper dihedrals for Proline are slightly different, check your atom numbers
+	- When converting your topology from amber99sb to RSFF2, open the file output file and:
+		- Verify that the #include statements for the .itp file and tip3p parameters point towards your RSFF2 folder 
+		- Check the [dihedrals] directive to make sure that the correct atoms are being used for dihedrals and that RSFF2 parameters are being applied to the correct dihedral angles
+		- Check the [bonds] directive is adding the proper exclusions for your peptide
+		- The peptide is cyclized under the [bonds] directive
+		- Improper and proper dihedrals involving terminal residues are cyclized
+		- When using Histidine, make sure the proper residue name written in the topology (i.e. HIE/HID/HIP/HIS) matches the protonation state in your peptide
+ 
+Energy Minimization and Equilibration:
+Each step of energy minimization or equilibration can introduce chirality changes, flipped bond configurations, or other weird artefacts without warning.
+	- After every step of either EM or equilibration, load the trajectory of your molecule into VMD. Visualize the trajectory with periodic boundary conditions and check for the following:
+		- The system is not expanding
+		- No bonds are breaking
+		- All bonds that should exist can be seen in VMD
+		- No bubbles are forming in your system
+		- Check that water bond lengths and angles are constrained as they should be for your chosen water model
+		- If certain molecules/atoms should be restrained, verify that they are being restrained in the trajectory
+	- Check the log files and runerr files to see if GROMACS is leaving any notes or error messages
+	- If you cannot justify the reason for a note being written by GROMACS, then make sure you fix whatever the note is telling you.
+
+For NVT simulations:
+	- Use the "gmx_mpi energy" command and check temperature, potential energy, kinetic energy, and total energy. Check in particular to see that temperature is remaining relatively constant.
+
+For NPT simulations
+	- Use the "gmx_mpi energy" command to check temperature, potential energy, kinetic energy, total energy, pressure, and density.
+		- Check to see if temperature is remaining relatively constant
+		- Check pressure to see if the reference value is within the error bars given
+		- Check the density to see if it is remaining relatively constant. This value should stabilize over the course of your NPT simulation
+
+Check your .mdp files to make sure you are using the correct parameters. Make sure you understand what every parameter in your .mdp file means.
+ 
+The Production Run (BE-META):
+Before you submit:
+	- Cross reference the bemeta.dat files with your topology to make sure that your collective variables are being defined correctly.
+	- When continuing a run, make sure the RESTART command is at the top of your bemeta file(s)
+	- Ensure that the correct biases are being applied to each replica in your bemeta file(s)
+		- Another way to do this by checking the log file for each replica once your job has been submitted and searching for the string ‘with arguments’ over all log files. This line should specify exactly which CVs are being biased for that replica
+	- Be sure to include -v in your mdrun command. This will allow you to track the progress of your simulation as it runs
+	- Generally if the runerr gives you a note or error, the runout file will have additional information
+
+After your job begins to run:
+	- Tail the runerr file
+		- Make sure that the estimate for the runtime is reasonable for a system of the size you are running. (For example, a 6mer cyclic peptide should run at a rate of approximately 80 ns/day)
+	- Cat your runout file
+		- If your simulation is running correctly this file should be empty.
+		- If an error message listing a specific node is shown, try to exclude the node and resubmit your job
+	- Tail the HILLS files to make sure that your simulation is running. Sometimes jobs will be submitted and will show up in the queue as running, but your simulation will not produce any data.
+	- If you are continuing a run, check the log file for the line which specifies that information was read from the previous run
+
+When your job has finished running:
+	- Tail the runerr file and look for the GROMACS quote to verify that the job finished running
+	- View the end of your log files to make sure that the information about performance and replica exchange rates is displayed.
+	- Tail your HILLS files to check that your simulation ran for the specified number of steps
+	- Visualize a fully solvated trajectory and make sure there are no bubbles or broken bonds in your system
+ 
+Analyzing Production Runs:
+	- Check every trajectory for cis bonds. In general, if cis bonds begin to form IN ANY REPLICA, your sampling will be of a weird conformational space that probably doesn't correspond to the system you care about. Visualize frames where cis bonds are formed to verify that your method of identifying cis bonds is working correctly.
+	- When performing dPCA/Cluster analysis check to make sure you understand what each script does and why each script is used.
+	- When trimming trajectories of neutral replicas, ensure that the -pbc mol flag is used in order to remove periodic boundary conditions and solvent molecules.
+		- Visualize these trajectories to verify that your peptide is not split across periodic boundaries. If it is, find a way to correct for it that makes sense for your system.
+	- Make note of the order in which you concatenate trimmed trajectory files in the raw_traj folder. The order in which these are concatenated should match the order in which trajectories are concatenated in the dihedral_traj folder
+	- When calculating the covariance using GROMACS, cat the eigenval.xvg file and verify that the number of eigenvalues is equal to twice the number of dihedral angles in your peptide structure
+	- Make sure the correct clusters are being used to generate cluster trajectories by checking the log files in the cluster_traj folder and making sure they match the indexes for the most populated clusters in the cluster.ndx file.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+------- Beneath this line are notes from fellow lab member’s interviews in 2019 ------
+This information has been compiled in the list above
+Jovan
+* Read Gromacs command outputs (especially grompp), with emphasis on notes and warnings
+   * Redirect grompp output to a file (ex. grompp.log) so that you can access this output at a later time, make sure that every note you get you have a justification for or know how to fix whatever the note is telling you
+* Check topology to make sure everything that should be included is there (especially the added dihedrals)
+   * Ex. 59 1 71 72 ;added by JD
+   * Check the include FF parameters and make sure it includes RSFF2.itp
+      * MAKE SURE that RSFF2.itp has the correct parameters (FudgeQQ = 1.0)
+* VMD the initial setup after solvation/ions/EM
+   * When loading a trajectory in VMD, load the coordinate file (gro file) and then load the trajectory into that gro file within VMD, watch the trajectory to make sure that the system is not expanding, no bonds are breaking, all bonds that should be there are there, no bubbles are forming, check if water bond lengths and bond angles are constrained where they should be over the course of the simulation (109.4ish degrees, and 1.0 A bonds)
+* Check runout/runerr of SLURM jobs to check parallelization scheme / load balancing / time to completion / see if it yells at me about anything
+   * In runerr files:
+      * Make sure the parallelization looks okay, how many MPI ranks, how many threads, make sure they are allocated the way you want them to be. Can be used as a sanity check to make sure you have the correct number of replicas
+      * Look at the tail of the runerr file to see when the simulation will finish, make sure things are running at ~100ns/day
+   * In runout files:
+      * Make sure it should be empty
+* Tail the logs obsessively as the jobs are running because I am bored and have no life
+   * The log files tell you which CVs are being biased in the corresponding plumed file
+      * Under Action METAD, searching for “with arguments” in the log file will also reveal this.
+         * If something is broken in your bemeta.dat file
+         * Can grep “with arguments” over all the files in your bemeta directory
+
+
+Agnes
+* When using chimera to initialize sequence
+   * If a cis bond forms when structure is cyclized, break bond connected to alpha carbon (neighboring phi/psi), and use adjust dihedral tool to rotate the bond 180o
+      * Then, recyclize to check if the cis bond is gone
+      * This process may need to be repeated until the CP has all-trans bonds
+   * After that, delete all H except the one on the N-terminal Nitrogen atom
+   * Then follow the protocol
+* Using GROMACS/Initializing
+   * First check aminoacids.rtp to see if the proper parameters have been made for the terminal residues
+   * Check specbonds.dat to make sure that the bond is listed
+      * Check the number at the top of the file to count the added lines
+   * Check that your gromacs library is there
+   * Follow procedure to get gro file, visualize the gro file in vmd to check that the sequence was properly cyclized
+   * Look into the RSFF2 topology, check teh #include statements to make sure RSFF2 parameters are being used.
+   * Check improper dihedrals to make sure the proper atoms numbers are used 
+   * When solvating two different explicit solvents, always make sure s1 and s2 have the same number of water molecules
+      * Tune the one that has less water to a larger box size
+* Equilibration
+   * Usually just follow protocol
+* BE-META/prod run
+   * Carefully check the atom numbers specified for your CVs
+   * If its continues run make sure to include the RESTART command in your plumed files
+   * Go into the log files of your bemeta simulation to check that each replica is biasing the correct CVs
+      * Check that exchanges are happening correctly
+* When submitting jobs
+   * Pay attention to make sure that your simulation is actually outputting data, sometimes the job is “running” but nothing is actually being produced
+   * Check the runerr file, include a -v in your mdrun command, it will show you the estimated run time
+   * Exclude the node that appears to be causing problems and resubmit
+Aidan 
+* For initial structures
+   * Make structures in chimera
+   * Check for cis bonds and D-amino acids visually in VMD/Chimera
+   * Align structures (s1 and s2) using align backbone in VMD and calculate the RMSD
+      * Typically for hexamers, and RMSD above 1.2 A^2 would be ideal
+      * Also, visually looking at the backbone and seeing if there are the same turns then redo a structure until its more different
+* Checking FF stuff
+   * Look to see that the rsff2 parameters are applied to all dihedrals
+   * Look at [bonds] to see proper exclusions are added
+   * Check that cyclization happened by looking at the [bonds] section
+   * Check improper and proper dihedrals to make sure that dihedral angles are consistent with a cyclized peptide (last res > first res)
+   * Check #includes to make sure proper FF included
+* For solvating/EM
+   * Go through the log file of the last npt simulation to see if there are any notes left by gromacs
+      * If something is wrong with the NPT you check NVT and then EM
+      * Look through log file and look for any notes being left
+      * Look through runerr as well
+   * Then go back and check the log file of the EM
+      * See if there are any notes or errors that would be a cause for alarm
+* When setting up prod run:
+   * Check the bemeta.dat files to make sure the correct biases are being applied
+   * And also check bemeta files have RESTART command if the run is continued
+* When submitting jobs
+   * Once submitted, tail runerr and see that the estimated run time is reasonable for your sim given the number of cpus
+      * If there is some note or overload error, the runout will have more info
+   * Tail one of the HILLS files to make sure things are running properly
+* When run ends
+   * Tail runerr to look for gromacs quote and see that run has completed
+   * Tail a HILLS file to make sure that the simulation ran to completion
+   * Look through a neutral replica look at the log file to see if there are any errors + look at run times
+   * Look at gaussians that are read from last simulation 
+      * Look for line in the log file that states that the previous run was read in properly
+   * Visualize the whole solvated simulation/a frame of the last gro file from that simulation to make sure there are no bubbles
+   * When doing analysis, look at the trajectory of the desolvated system using VMD
+   * Calculate NIP as well to make sure there is reasonable convergence in the time that is analyzed
+   * Do analysis to look at turn populations to make sure CP structures are within reason, and not any irregular shapes
+   *  
+Tim 
+* When initializing structures
+   * To check chirality in chimera, use: chirality :i@CA (i being the number of residue). All D-amino acids are S except for Cysteine. 
+   * You can use Chimera to check the amide torsion for you if your peptide chain is too long or if you are having trouble visualizing it. To do so, choose the atoms involved in the amide bond: 
+        selec :i@CA :i@C :(i+1)@N :(i+1)@CA
+i being the residue number
+      * Torsion angle of 180 degrees is trans, 0 degrees is cis
+   * Alternatively, use Aidan’s script to check cis or trans
+* When transforming parameters form amber99sb to RSFF2
+   * Make sure that the #include statement in the topology file points to your RSFF2 directory
+* During equilibration
+   * In the NVT runs, check temperature. In the NPT runs, check the pressure
+* For production runs
+   * Check the runerr file
+      * While simulation is running makesure the simulation is still running and that it is giving a reasonable estimation for the simulation running
+      * When the run ends, check the tail of the runerr file for the GROMACS quote
+   * Load the xtc file of a neutral replica into vmd to check trajectory
+   * Check the log file when doing a production run
+Jiayuan 
+* When initializing structure:
+   * Open the structure after equilibration in VMD to make sure that there is nothing strange with your molecule
+      * Specifically, check the chirality to make sure chiral centers are what you want them to be
+         * To make this easier, in your selection input resid 1, 2, 3, etc. and you can look at each residue individually to determine chirality.
+      * Check for cis peptide bonds
+* For FF parameters (RSFF2)
+   * Look at the #include files and make sure that they point to the specified library
+   * Generally, scan each residue to make sure that they have been modified by the RSFF2 code.
+      * In cases of Histidine, make sure the proper residue name is in the topology
+      * Check the [pairs], [angles], and [dihedrals] sections to make sure that the proper changes have been applied.
+   * Check that the impropers that you have added are correct
+      * Check this by looking at the atom IDs in the topology file and matching the atom ID to the atom type, to make sure that the improper you are adding is correct (the same as the dihedrals that were commented out in the aminoacids.rtp file)
+* Generating be-meta files
+   * Use the script located at the following directory:
+      * /cluster/tufts/ysl8/jmiao/templates/simulation_template/6mer/2_production/VMD_writeBE2DMetaDInput.sh
+      * After the bemeta file is generated, compare the atom IDs with the .gro file to make sure that the correct atoms were selected to define the phi/psi angles
+* When jobs finish:
+   * Look at the runerr file to make sure that the simulation did run to completion, instead of being killed in the middle of the run
+
+
+
+
+Francini
+* When constructing topologies
+   * Make sure that all changes that should be made when using RSFF2 are made
+      * Potential functions functionality group for Chi and Chi’, Psi and Psi’, Phi and Phi’
+         * Parameters and potential function 
+   * Make sure scaling factor in fudgeQQ is consistent with RSFF2 itp, (1.0)
+   * Make sure that LJ functions remain the same
+   * Dihedrals added properly
+* For equilibration, VMD the gro files for all steps from pdb2gmx until energy minimization
+   * Fix errors that gromacs outputs
+   * Check all the notes that are output by gromacs, ask questions (usually to jovan) if I do not understand what the messages in gromacs notes mean.
+   * For NVT:
+      * Try to plot energy profiles, Temperature, Energies, for NVT
+   * For NPT: 
+      * Plot Temp, Energy, Pressure,
+   * Both of these are checked in addition to checking what gromacs outputs, like notes and warnings
+   * Double check mdp files to make sure all parameters that are being used are well understood by you.
+      * Understand why everything in the mdp file is there and what it does
+* For bemeta.dat files
+   * For writing cv’s draw the molecule, and then reference the numbering in the topology file and use that numbering to correctly label the atoms used for each CV that will be biased in the bemeta files.
+* Production Run 
+   * Check the log files
+      * tail the log files for one biased and one unbiased replica.
+   * Tail the runerr file
+      * Should say something like “writing final coordinates …”
+      * Throughout the simulation run, tail the runerr file to check when the simulation is supposed to finish, if things are not rpedicted to finish in ~100ns/day, then there is probably something wrong with the actual job submission, so I cancel the job and try to fix what *.job file.
+         * Check within 5 mins of submitting
+   * Check part 5 of 2. CP-Be-Meta Simulations on the google drive to make sure things are consistent
+      * Do this step first
+* dPCA analysis 
+   * Be conscious of which version of Python the scripts are written in, so that the syntax of the scripts does not cause any errors
+      * Python 2.6.7 seems to be working for all python scripts throughout the entire process
+   * For cluster_analysis folder, look at the clustering png files to see if the clusters are not doing anything “funny”
+      * (i.e. For GNSRV, not too many clusters forming when comparing with the results of peers)
+   * Check the code of the scripts to make sure that there are no errors
+   * Check output of .txt files to make sure things are formatted correctly
