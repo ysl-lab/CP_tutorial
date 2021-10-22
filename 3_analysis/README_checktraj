@@ -1,0 +1,17 @@
+README for check_traj.py, last updated October 20th, 2021 by Marc and Tiffani.
+
+Command line flags:
+--gro (specify file that will generate dihedral angle atom indices)
+--trj (specify the file that will be analyzed with gmx angle and the atom indices from the --gro file. This can be a .gro or a .trj)
+--cyclic (specify if your input is linear or cyclic, user input should be "True" or "False". The default is False)
+--cutoff (specify the dihedral angle absolute value under which the angle is classified as a cis peptide bond. The default is 90.)
+
+Some example usage:
+python check_traj.py --gro equilNPT.gro --trj equilNPT.xtc --cyclic True --cutoff 150
+python check_traj.py --gro equilNPT.gro --trj equilNPT.gro --cyclic False
+
+Both cyclic and linear peptides are handled the same way, and the residues Ace cap and NMe cap are supported for linear peptides. Other caps are not currently supported without potentially the need to adjust the code.
+
+The check_traj.py script is designed to take two files, one to specify the system (.gro file) and one to analyze for chirality (.gro or .xtc). It works by first reading the system .gro file and identifying relevant atoms for omega angle; an index file is created that uses these atoms to specify omega dihedral angles. 
+The program then uses gmx angle based on this index file to calculate the omega angle for each residue. Each angle is compared against the user input cutoff to determine if each peptide bond is cis or trans based on the corresponding omega angle. The cutoff is an absolute value, where any dihedral angle with an absolute value below the cutoff is classified as a cis bond. 
+The final input will be a percentage of frames with cis bonds in stdout, and two index files that contain frames with all good (trans) peptide bonds and frames with one or more bad (cis) peptide bonds.
