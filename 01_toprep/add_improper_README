@@ -1,0 +1,12 @@
+README for add_improper.py, add_improper_extra.py
+Marc Descoteaux, August, 2021
+
+add_improper.py and add_improper_extra.py are programs that add back the two improper dihedrals in a cyclic peptide that were excluded during the process of creating a cyclic peptide topology with Gromacs according to lab protocol. It is designed to take a cyclic peptide topology, and has no purpose for linear peptides (add_improper_extra.py could be useful for non-cyclic peptides but would need some tinkering to only add the peptide bond improper dihedrals that exist in a linear peptide.)
+
+To use these program, do: python add_improper.py --gro [.gro file] --ori [Topology_without_Imp.top] --out [Topology_with_imp.top]
+
+If not specified the program searches for the default filenames: "prot.gro", "cx_amber99sbMod_tip3p_temp.top", "cx_amber99sbMod_tip3p.top", respectively for the .gro file, the input topology, and the output topology.
+
+The program works by reading the protein in the input topology and picking out the atom indices of specific atoms that are needed to construct the missing improper dihedrals. The program stores these atoms in a dictionary by name and residue number, and then uses a fixed construction to write the new topologyso that it is exactly the same as the input, except with the addition of the new improper dihedrals.
+
+add_improper_extra.py adds the same two improper dihedrals as add_improper.py, except it also adds one improper dihedral along each peptide bond in the cyclic peptide that have been found to prevent the presence of cis bonds in production Bemeta simulations (though not entirely prohibit them).

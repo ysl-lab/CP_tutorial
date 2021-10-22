@@ -1,0 +1,24 @@
+#!/bin/bash
+##Request a specific partition for the resource allocation.
+#SBATCH -p linlab
+## Request the number of nodes with "-N", the number of tasks with "-n", the number of processors per task with "-c".
+#SBATCH -N 11 -n 17 -c 1
+##Explicitly exclude certain nodes from the resources granted to the job. This example will exclude the old m4 nodes.
+#SBATCH --exclude=i2cmp[004-035,037-043,045-053]
+## Uncomment the following line if you want to use gpus, the number of gpus that can be used is from 1 to 4.
+##SBATCH --gres=gpu:t4:2
+## Specify the job name.
+#SBATCH -J job_name
+##Instruct Slurm to connect the batch script's standard output directly to the file name specified.
+#SBATCH -o runout.%j
+##Instruct Slurm to connect the batch script's standard error directly to the file name specified.
+#SBATCH -e runerr.%j
+##Set a limit on the total run time of the job allocation.The example is 7 days.
+#SBATCH -t 7-00:00:00
+##Identify which environment variables from the submission environment are propagated to the launched application. In this example, all of the user's environment will be loaded.
+#SBATCH --export=ALL
+## Specify memory required per allocated CPU
+#SBATCH --mem-per-cpu=1G
+
+## The following line specifies the comands the you want to issue. This is an example to run be-meta simulations for a 6-mer cyclic peptide, where 17 replicas are used.
+mpirun -np 17 gmx_mpi mdrun -ntomp 1 -nb gpu -v -plumed bemeta -multi 17 -replex 2500 -s start -deffnm prod 

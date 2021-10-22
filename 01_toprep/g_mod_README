@@ -1,0 +1,21 @@
+MODIFIED BY SMM TO TREAT CYCLIC PEPTIDES and Aidan to prevent HIS/unknown residue issue
+Commented by Marc, August 2021
+The README for g_mod_top_RSFF2_JD_0726CommentNoTerm.py
+
+This program takes an input topology using the modified Amber forcefield and outputs a converted topology using the RSFF2 forcefield. This program was modified from the original source files (Accurate Structure Prediction and Conformational Analysis of Cyclic Peptides with Residue-Specific Force Fields https://doi.org/10.1021/acs.jpclett.6b00452) to handle cyclic peptides but should also handle most (See later descriptions) uncapped linear peptides and capped linear peptides.
+Example usage: python g_mod_top_RSFF2_JD_0726CommentNoTerm.py [input forcefield] [output forcefield]
+          e.g. python g_mod_top_RSFF2_JD_0726CommentNoTerm.py modifiedAmber.top RSFF2.top
+
+Limitations to the program's usage:
+If the script cannot find and replace the lines in the topology for forcefield.itp it will exit with an error.
+If the script cannot find and replace the lines in the topology for tip3p.itp with the RSFF2 folder's version of this file, it will ask for your approval to continue (in case you are using a different water model, thus the tip3p.itp line would not be in the topology.
+If the script cannot find a residue in its database, it will ask for approval to continue (in case the residues not found are caps), you must enter 'y' to get an output in this case.
+The script will print the residues in the sequence, which residues were converted to RSFF2, and the linear/cyclic status of the input.
+The script also will remind users to make sure their structure generation for D-Valine has correctly swapped CG1 and CG2 when switching the chirality from L- to D-
+The program expects residues to begin their numbering at 1 in the input topology.
+Always check that the conversion to RSFF2 did not miss any interactions or dihedral parameters that are specified by RSFF2. Be especially vigilent when dealing with caps and termini, ensuring that no dihedrals or interactions between the cap/termini and its neighbor residues were forgotten.
+The termini supported for uncapped peptides are NH3+ COOH, COO- and NH2 (Make sure that NH2 works correctly, it was added in Aug 2021 by Marc)
+
+The program works by reading in the input topology and determining the protein sequence and atom numbers described by the topology. It constructs dihedral angles and 1-5 1-6 interactions that are specified especially by the RSFF2 forcefield by having all of them exhaustively written in the program. All these parameters are hardcoded. Then, the program writes a new topology file that checks for each line if it has constructed an RSFF2 version of that topology line. If it has, it replaces the line in the input topology with the line the program created. 
+
+Note that terminal residues do not get their backbone interactions tuned by RSFF2. This means many different caps can be used as terminal residues, as long as the N terminus residue contains an N, and the C terminus residue contains a C and an O. This functionality matches the published source code that we started from. For example, if the sequence was Lys-Ala-Gly, with an NH3+ terminus on Lys and a COOH terminus on Gly, Gly would not get an RSFF2 phi dihedral, even though that dihedral exists, and Lys would not get an RSFF2 psi dihedral, even though that dihedral exists as well. Ala would have both RSFF2 phi and psi dihedrals.
