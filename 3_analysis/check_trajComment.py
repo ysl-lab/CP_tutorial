@@ -36,8 +36,8 @@ def get_omega_atoms(gro):
     return length, mem
 
 def get_caps(gro):
-    N_cap=type(False)
-    C_cap=type(False)
+    N_cap=False
+    C_cap=False
     fi = open(gro)
     lines = fi.readlines()
     fi.close()
@@ -60,7 +60,7 @@ def write_omega(omegas,filename):
     f= open(filename,"w+")
     f.write('[Omegas]\n')
     for i in range(len(omegas)):
-     f.write(omegas[i]+'\n')
+        f.write(omegas[i]+'\n')
     f.close()
     return
 
@@ -79,111 +79,113 @@ if __name__ == "__main__":
     cutoff = options.cutoff
     cyclic = get_parity(options.cyclic)
 
-length, atom_dic = get_omega_atoms(gro)
-omegas = []
-length= int(length)
-#First check if the peptide is capped with ACE and/or NME.
-N_cap,C_cap= get_caps(gro)
+    length, atom_dic = get_omega_atoms(gro)
+    omegas = []
+    length= int(length)
+    print(length)
+    #First check if the peptide is capped with ACE and/or NME.
+    N_cap,C_cap= get_caps(gro)
 
-#For each residue, find its' atoms that define its' omega angle. 
-#For example, residue i would need the atom indices corresponding to CAi, Ci, Ni+1, and CAi+2.
-#These definitions are a little different for capped peptides.
+    #For each residue, find its' atoms that define its' omega angle. 
+    #For example, residue i would need the atom indices corresponding to CAi, Ci, Ni+1, and CAi+2.
+    #These definitions are a little different for capped peptides.
 
-#Linear capped case: 
-if N_cap ==True:
-    dihedral ="%5s %5s %5s %5s" %(atom_dic["CH3" + str(1)] ,atom_dic["C" + str(1)], \
-    atom_dic["N" + str(2)],atom_dic["CA" + str(2) ])
-    omegas.append(dihedral)
-
-    for i in range(2,length-1):
-        dihedral="%5s %5s %5s %5s" %(atom_dic["CA" + str(i)] ,atom_dic["C" + str(i)], \
-        atom_dic["N" + str(i+1)],atom_dic["CA" + str(i+1) ])
+    #Linear capped case: 
+    if N_cap:
+        dihedral ="%5s %5s %5s %5s" %(atom_dic["CH3" + str(1)] ,atom_dic["C" + str(1)], \
+        atom_dic["N" + str(2)],atom_dic["CA" + str(2) ])
         omegas.append(dihedral)
-    if C_cap==True:
+
+        for i in range(2,length-1):
+            dihedral="%5s %5s %5s %5s" %(atom_dic["CA" + str(i)] ,atom_dic["C" + str(i)], \
+            atom_dic["N" + str(i+1)],atom_dic["CA" + str(i+1) ])
+            omegas.append(dihedral)
+        if C_cap:
+            dihedral="%5s %5s %5s %5s" %(atom_dic["CA" + str(length-1)] ,atom_dic["C" + str(length-1)], \
+            atom_dic["N" + str(length)],atom_dic["CA" + str(length) ])
+            omegas.append(dihedral)
+        if C_cap:
+            dihedral="%5s %5s %5s %5s" %(atom_dic["CA" + str(length-1)] ,atom_dic["C" + str(length-1)], \
+            atom_dic["N" + str(length)],atom_dic["CA" + str(length)])
+            omegas.append(dihedral)
+
+    if (not N_cap) and C_cap:
+        for i in range(1,length-1):
+            dihedral="%5s %5s %5s %5s" %(atom_dic["CA" + str(i)] ,atom_dic["C" + str(i)], \
+            atom_dic["N" + str(i+1)],atom_dic["CA" + str(i+1) ])
+            omegas.append(dihedral)
+
         dihedral="%5s %5s %5s %5s" %(atom_dic["CA" + str(length-1)] ,atom_dic["C" + str(length-1)], \
         atom_dic["N" + str(length)],atom_dic["CA" + str(length) ])
         omegas.append(dihedral)
-    if C_cap==False:
-        dihedral="%5s %5s %5s %5s" %(atom_dic["CA" + str(length-1)] ,atom_dic["C" + str(length-1)], \
-        atom_dic["N" + str(length)],atom_dic["CA" + str(length)])
-        omegas.append(dihedral)
-
-if (N_cap ==False) and (C_cap==True):
-    for i in range(1,length-1):
-        dihedral="%5s %5s %5s %5s" %(atom_dic["CA" + str(i)] ,atom_dic["C" + str(i)], \
-        atom_dic["N" + str(i+1)],atom_dic["CA" + str(i+1) ])
-        omegas.append(dihedral)
-
-    dihedral="%5s %5s %5s %5s" %(atom_dic["CA" + str(length-1)] ,atom_dic["C" + str(length-1)], \
-    atom_dic["N" + str(length)],atom_dic["CA" + str(length) ])
-    omegas.append(dihedral)
 
 
-#Uncapped peptide cases (linear and cyclic):
-if (N_cap == False) and (C_cap==False):
-    for i in range(1,length):
-      dihedral="%5s %5s %5s %5s" %(atom_dic["CA" + str(i)] ,atom_dic["C" + str(i)], \
-            atom_dic["N" + str(i+1)],atom_dic["CA" + str(i+1) ])
-      omegas.append(dihedral)
+    #Uncapped peptide cases (linear and cyclic):
+    if (not N_cap) and (not C_cap):
+        for i in range(1,length):
+            dihedral="%5s %5s %5s %5s" %(atom_dic["CA" + str(i)] ,atom_dic["C" + str(i)], \
+                atom_dic["N" + str(i+1)],atom_dic["CA" + str(i+1) ])
+            omegas.append(dihedral)
 
-    #For the cyclic peptide case, we need to add the head_tail dihedral. 
-    #For example, a linear pentapeptide has 4 omega angles, but a cyclic pentapeptide has 5 omega angles.
+        #For the cyclic peptide case, we need to add the head_tail dihedral. 
+        #For example, a linear pentapeptide has 4 omega angles, but a cyclic pentapeptide has 5 omega angles.
+        if cyclic:
+            head_tail_dihedral= "%5s %5s %5s %5s" %(atom_dic["CA" + str(length)] ,atom_dic["C" + str(length)], \
+                atom_dic["N" + str(1)],atom_dic["CA" + str(1) ])
+            omegas.append(head_tail_dihedral)
+
+    #Naming of input .ndx files. 
+    baseName = trj.split(".")
+    indexName = baseName[0]+"_omega.ndx"
+    print(baseName[0])
+    angleXVGFile = baseName[0]+"_omega.xvg"
+    angdistFile = baseName[0]+"_angdist.xvg"
+
+    write_omega(omegas,indexName)
+
+    #Execute GROMACS command using the generated index file. Output are 2 .xvg files. the XXX_omega.xvg contains the omega angles for each residue at each frame 
+    #and the XXX_angdist.xvg contains a distribution fo the omega angles (which is not what we need for cis/trans, but gromacs will output it by default).
+    os.system("gmx_mpi angle -f "+trj+" -n "+indexName+" -ov "+angleXVGFile+" -od "+angdistFile+" -all -xvg none -type dihedral") #this is where you need .trj .xtc
+    #print(list(range(2,length+2)))
+
+    #Read only the angles that we want from the output of gmx angle
     if cyclic:
-      head_tail_dihedral= "%5s %5s %5s %5s" %(atom_dic["CA" + str(length)] ,atom_dic["C" + str(length)], \
-            atom_dic["N" + str(1)],atom_dic["CA" + str(1) ])
-      omegas.append(head_tail_dihedral)
+        Angles = np.loadtxt(angleXVGFile,usecols=list(range(2,length+2)))
+    else:
+        Angles = np.loadtxt(angleXVGFile,usecols=list(range(2,length+1)))
+    #Define an array that holds the frame number and angle number that do not satisfy our criteria for cis/trans
+    BadAngles = []
+    #print(len(Angles[:,0]))
+    #Fix an issue with "not enough dimensions" if dealing with a gro file
+    if gro == trj:
+        Angles = Angles[np.newaxis]
+    print(len(Angles[:,0]))
+    #Scan through every angle and frame in the collected omega angles array and check each one against the cutoff.
+    for i in range(len(Angles[:,0])):
+        for j in range(length):
+            if abs(Angles[i,j]) < int(cutoff):
+                BadAngles.append([i,j])
 
-#Naming of input .ndx files. 
-baseName = trj.split(".")
-indexName = baseName[0]+"_omega.ndx"
-print(baseName[0])
-angleXVGFile = baseName[0]+"_omega.xvg"
-angdistFile = baseName[0]+"_angdist.xvg"
-write_omega(omegas,indexName)
+    #print(BadAngles)
+    #Ensure the user sees any problematic angles
+    for Angle in BadAngles:
+        print("Angle", Angle[1], "in frame",Angle[0],"is cis")
 
-#Execute GROMACS command using the generated index file. Output are 2 .xvg files. the XXX_omega.xvg contains the omega angles for each residue at each frame 
-#and the XXX_angdist.xvg contains a distribution fo the omega angles (which is not what we need for cis/trans, but gromacs will output it by default).
-os.system("gmx_mpi angle -f "+trj+" -n "+indexName+" -ov "+angleXVGFile+" -od "+angdistFile+" -all -xvg none -type dihedral") #this is where you need .trj .xtc
-#print(list(range(2,length+2)))
+    #Calculate the percent of frames one or more cis bonds
+    print("Percent of frames with cis bonds is:", 100*float(len(set(list(i[0] for i in BadAngles)))/len(Angles[:,0])),"%")
 
-#Read only the angles that we want from the output of gmx angle
-if cyclic:
-    Angles = np.loadtxt(angleXVGFile,usecols=list(range(2,length+2)))
-else:
-    Angles = np.loadtxt(angleXVGFile,usecols=list(range(2,length+1)))
-#Define an array that holds the frame number and angle number that do not satisfy our criteria for cis/trans
-BadAngles = []
-#print(len(Angles[:,0]))
-#Fix an issue with "not enough dimensions" if dealing with a gro file
-if gro == trj:
-    Angles = Angles[np.newaxis]
-print(len(Angles[:,0]))
-#Scan through every angle and frame in the collected omega angles array and check each one against the cutoff.
-for i in range(len(Angles[:,0])):
-    for j in range(length):
-        if abs(Angles[i,j]) < int(cutoff):
-            BadAngles.append([i,j])
-
-#print(BadAngles)
-#Ensure the user sees any problematic angles
-for Angle in BadAngles:
-    print("Angle", Angle[1], "in frame",Angle[0],"is cis")
-
-#Calculate the percent of frames one or more cis bonds
-print("Percent of frames with cis bonds is:", 100*float(len(set(list(i[0] for i in BadAngles)))/len(Angles[:,0])),"%")
-
-#Now collect any frames that have at least one cis bond in CisAngles, and any frames that are not in CisAngles in TransAngles
-TransIndex = []
-CisIndex = list(set(list(i[0] for i in BadAngles)))
-for i in range(1,len(Angles[:,0])+1):
-    if i not in CisIndex:
-        TransIndex.append(i)
-#Write the frames to a .ndx file so that a user could filter their trajectory. This is only really helpful for .xtc analyses.
-with open(baseName[0]+"_trans.ndx",'w') as outfile:
-    outfile.write(" [frame] \n")
-    for i in TransIndex:
-        outfile.write(str(i)+"\n")
-with open(baseName[0]+"_cis.ndx",'w') as outfile:
-    outfile.write(" [frame] \n")
-    for i in CisIndex:
-        outfile.write(str(i)+"\n")
+    #Now collect any frames that have at least one cis bond in CisAngles, and any frames that are not in CisAngles in TransAngles
+    TransIndex = []
+    CisIndex = list(set(list(i[0] for i in BadAngles)))
+    for i in range(1,len(Angles[:,0])+1):
+        if i not in CisIndex:
+            TransIndex.append(i)
+    #Write the frames to a .ndx file so that a user could filter their trajectory. This is only really helpful for .xtc analyses.
+    with open(baseName[0]+"_trans.ndx",'w') as outfile:
+        outfile.write(" [frame] \n")
+        for i in TransIndex:
+            outfile.write(str(i)+"\n")
+    with open(baseName[0]+"_cis.ndx",'w') as outfile:
+        outfile.write(" [frame] \n")
+        for i in CisIndex:
+            outfile.write(str(i)+"\n")
