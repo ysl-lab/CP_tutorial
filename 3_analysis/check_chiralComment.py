@@ -3,6 +3,7 @@
 #and output a .xvg file containing the angles for each residue for each frame in the trajectory.
 #Finally, the script will read this .xvg file and check if any angle is below a threshold angle, such 
 #that the angle would be classified as "cis".
+#Feb 2022, This script runs after loading Gromacs and required packages (gcc/4.9.2, openmpi/2.1.2, and cuda/8.0.44, as well as loading "module load python/3.6.0", I have found issues with "module load python", which loads python 2.7.3 or more directly "module load python/2.7.3", which appears to disrupt Gromacs.
 
 import optparse
 import numpy as np
@@ -167,7 +168,7 @@ if __name__ == "__main__":
 
     #Execute GROMACS command using the generated index file. Output are 2 .xvg files. the XXX_omega.xvg contains the improper angles for each residue at each frame 
     #and the XXX_angdist.xvg contains a distribution fo the angles (which is not what we need for chirality, but gromacs will output it by default).
-    os.system("gmx_mpi angle -f "+trj+" -n "+indexName+" -ov "+angleXVGFile+" -od "+angdistFile+" -all -xvg none -type dihedral")
+    os.system("gmx_mpi angle -f "+trj+" -n "+indexName+" -ov "+angleXVGFile+" -od "+angdistFile+" -all -xvg none -type dihedral  &> "+baseName[0]+"_GromacsChiral.log")
     print(list(range(2,length+2)))
     Angles = np.loadtxt(angleXVGFile,usecols=list(range(2,length+2)))
     #NOTE THAT BADANGLES IS ZERO INDEXED
@@ -184,14 +185,14 @@ if __name__ == "__main__":
                 pass
             #For L chirality
             elif test_vec[j] == 1:
-                if abs(Angles[i,j]) < 0:
+                if Angles[i,j] < 0:
                     BadAngles.append([i,j])
                 if abs(Angles[i,j]) == 0:
                     print("Error: Inconclusive Chirality for frame:",str(i),", residue:",str(j+1), ", angle:",Angles[i,j],".")
                     
             #For D chirality
             else:
-                if abs(Angles[i,j]) > 0:
+                if Angles[i,j] > 0:
                     BadAngles.append([i,j])
                 if abs(Angles[i,j]) == 0:
                     print("Error: Inconclusive Chirality for frame:",str(i),", residue:",str(j+1), ", angle:",Angles[i,j],".")

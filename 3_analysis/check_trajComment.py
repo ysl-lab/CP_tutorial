@@ -3,6 +3,7 @@
 #and output a .xvg file containing the omega angles for each residue for each frame in the trajectory.
 #Finally, the script will read this .xvg file and check if any angle is below a threshold angle, such 
 #that the angle would be classified as "cis".
+#Feb 2022, This script runs after loading Gromacs and required packages (gcc/4.9.2, openmpi/2.1.2, and cuda/8.0.44, as well as loading "module load python/3.6.0", I have found issues with "module load python", which loads python 2.7.3 or more directly "module load python/2.7.3", which appears to disrupt Gromacs.
 
 import optparse
 import numpy as np
@@ -145,7 +146,7 @@ if __name__ == "__main__":
 
     #Execute GROMACS command using the generated index file. Output are 2 .xvg files. the XXX_omega.xvg contains the omega angles for each residue at each frame 
     #and the XXX_angdist.xvg contains a distribution fo the omega angles (which is not what we need for cis/trans, but gromacs will output it by default).
-    os.system("gmx_mpi angle -f "+trj+" -n "+indexName+" -ov "+angleXVGFile+" -od "+angdistFile+" -all -xvg none -type dihedral") #this is where you need .trj .xtc
+    os.system("gmx_mpi angle -f "+trj+" -n "+indexName+" -ov "+angleXVGFile+" -od "+angdistFile+" -all -xvg none -type dihedral &> "+baseName[0]+"_Gromacs.log") #this is where you need .trj .xtc
     #print(list(range(2,length+2)))
 
     #Read only the angles that we want from the output of gmx angle

@@ -10,6 +10,8 @@ Some example usage:
 python check_traj.py --gro equilNPT.gro --trj equilNPT.xtc --cyclic True --cutoff 150
 python check_traj.py --gro equilNPT.gro --trj equilNPT.gro --cyclic False
 
+Feb 2022, This script runs after loading Gromacs and required packages (gcc/4.9.2, openmpi/2.1.2, and cuda/8.0.44, as well as loading "module load python/3.6.0", I have found issues with "module load python", which loads python 2.7.3 or more directly "module load python/2.7.3", which appears to disrupt Gromacs.
+
 Both cyclic and linear peptides are handled the same way, and the residues Ace cap and NMe cap are supported for linear peptides. Other caps are not currently supported without potentially the need to adjust the code.
 
 The check_traj.py script is designed to take two files, one to specify the system (.gro file) and one to analyze for chirality (.gro or .xtc). It works by first reading the system .gro file and identifying relevant atoms for omega angle; an index file is created that uses these atoms to specify omega dihedral angles. 
