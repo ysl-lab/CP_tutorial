@@ -1,6 +1,7 @@
 #This program adds the two improper dihedrals in a cyclic peptide that were excluded during the process of creating a cyclic peptide topology with Gromacs according to lab protocol.
 #To use this program, do: python --gro [.gro file] --ori [Topology_without_Imp.top] --out [Topology_with_imp.top]
 #If not specified the program searches for the default filenames: "prot.gro", "cx_amber99sbMod_tip3p_temp.top", "cx_amber99sbMod_tip3p.top", respectively for the .gro file, the input topology, and the output topology.
+#On the cluster as of Feb 2022, this script will run after the command "module load python" (python 2.7.3).
 
 import optparse
 #This function searches the input .gro file for the atom numbers relevant to the dihedrals to be added.

@@ -3,6 +3,7 @@
 #This program takes an input topology using the modified Amber forcefield and outputs a converted topology using the RSFF2 forcefield. This program was modified to handle cyclic peptides but should also handle uncapped linear peptides and capped linear peptides.
 #Example usage: python g_mod_top_RSFF2_JD_0726Comment.py [input forcefield] [output forcefield]
 #          e.g. python g_mod_top_RSFF2_JD_0726Comment.py modifiedAmber.top RSFF2.top
+#On the cluster as of Feb 2022, this script will run after the command "module load python" (python 2.7.3).
 
 #If the script cannot find and replace the lines in the topology for forcefield.itp it will exit with an error.
 #If the script cannot find and replace the lines in the topology for tip3p.itp with the RSFF2 folder's version of this file, it will ask for your approval to continue (in case you are using a different water model, thus the tip3p.itp line would not be in the topology.

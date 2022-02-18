@@ -5,6 +5,7 @@ The README for g_mod_top_RSFF2_JD_0726CommentNoTerm.py
 This program takes an input topology using the modified Amber forcefield and outputs a converted topology using the RSFF2 forcefield. This program was modified from the original source files (Accurate Structure Prediction and Conformational Analysis of Cyclic Peptides with Residue-Specific Force Fields https://doi.org/10.1021/acs.jpclett.6b00452) to handle cyclic peptides but should also handle most (See later descriptions) uncapped linear peptides and capped linear peptides.
 Example usage: python g_mod_top_RSFF2_JD_0726CommentNoTerm.py [input forcefield] [output forcefield]
           e.g. python g_mod_top_RSFF2_JD_0726CommentNoTerm.py modifiedAmber.top RSFF2.top
+As of Feb 2022, this script runs on the cluster after using the command "module load python" (python 2.7.3).
 
 Limitations to the program's usage:
 If the script cannot find and replace the lines in the topology for forcefield.itp it will exit with an error.
