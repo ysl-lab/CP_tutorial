@@ -1,26 +1,6 @@
 Program written by Aidan Fike, July 2019
 Updated by Kevin Schult, 2020, with help from Tim, Omeir, and Jovan
 
-NOTE: To successfully run this program on the cluster, you will need to
-activate the correct Python environment from a conda installation.
-See details below.
-
-If this is your first time using this script, please see the
-CLUSTER SETUP section below before using.
-
-Run this script on an "interactive" cluster node to avoid slowing down the
-login node.
-
-ORDER TO LOAD MODULES FOR SCRIPT:
-        (1) Load anaconda/3 using "module load anaconda/3
-	(2) Load python and MDAnalysis using "source activate [env_name]"
-            where [env_name] is mda3 if you're using Kevin's setup
-            or the name of your environment in your personal setup
-
-AFTER SCRIPT IS RUN:
-	Purge python and MDAnalysis using "source deactivate"
-	Purge other modules at your discretion
-
 USAGE: To use this program run:
 
     python main.py [-flag argument] [-flag argument] [-flags]
@@ -79,80 +59,6 @@ USAGE: To use this program run:
     Note that if your desired structure contains cis peptide bonds, there is no
     guarantee that this script will be able to produce a complete set of such structures
     due to cis peptide bonds being generally less energetically favorable than trans.
-
-CLUSTER SETUP: This script is dependent on Chimera, Python 3.7, and 
-the Python package MDAnalysis. The Chimera executable is accessed directly from Tim's
-working directory, but Python and MDAnalysis should be loaded through the Anaconda cluster module.
-
-There's two ways to get access to Python and MDAnalysis using conda: the quick and dirty way,
-or the "make your own installation" way.
-
-	QUICK AND DIRTY:
-	Copy the .condarc file Kevin has stored in /cluster/tufts/ylin12_2/KevinSchult/ to your
-        home directory. This tells conda to look for the Python environments Kevin's installed
-        in /cluster/tufts/ylin12_2/KevinSchult/conda.
-        Start an interactive cluster job, load the modules in the order described at the top
-        of this file, and run the script.
-
-        MAKE YOUR OWN INSTALLATION:
-        See the following instructions from TTS:
-	
-	1. start an interactive session on the cluster on a compute node
-		$ srun -p interactive -n 4 --mem=16g --pty bash
-
-	2. load anaconda module
-		$ module load anaconda/3
-
-	3. customize your own conda environment configuration:
-		Since you have limited amount of storage in your home directory, 
-		we do not suggest you install the packages there. As you belong 
-		to XXXX group on the cluster, please use the group research storage 
-		for the purpose.
-		Create two directories in your group research storage space 
-		(one for storing the envs, one for storing the pkgs, for example: condaenv, condapkg)
-
-		If you haven't used conda before on the cluster, create a file named ".condarc" in your home directory.
-
-		Now add the following 4 lines to the .condarc file 
-		(modify according to your real path to the directories):
-			envs_dirs:
-			- /cluster/tufts/XXXX/$USER/condaenv/
-			pkgs_dirs:
-			- /cluster/tufts/XXXX/$USER/condapkg/
-		Or you can do so from command line with the following commands 
-		(only add 4 lines to the .condarc file OR use these commands, not both)
-			$ conda config --append envs_dirs /cluster/tufts/XXXX/$USER/condaenv/
-			$ conda config --append pkgs_dirs /cluster/tufts/XXXX/$USER/condapkg/
-
-		Then add channels to your conda config as well (here are only 2, but you can add more you need):
-			$ conda config --add channels bioconda
-			$ conda config --add channels conda-forge
-
-	4. Now you can create your own conda env
-		$ cd /cluster/tufts/XXXX/$USER/condaenv/
-		$ conda create -p yourenvname python=3.7
-
-	5. activate the environment
-		$ source activate yourenvname (Kevin used mda3 as his env name)
-
-	6. install yourpackage in the conda env
-		$ conda install -c conda-forge mdanalysis
-
-	7. test
-
-	8. When you are done, deactivate the env
-		$ source deactivate 
-
-	Now, start an interactive cluster job if you haven't already, load the
-        modules in the order described at the top of this file, and run the script.
-
-ORDER TO LOAD MODULES FOR SCRIPT:
-        (1) Load anaconda/3 using "module load anaconda/3
-	(2) Load python and MDAnalysis using "source activate mda3"
-
-AFTER SCRIPT IS RUN:
-	Purge python and MDAnalysis using "source deactivate"
-	Purge other modules at your discretion
 
 PROGRAM DESCRIPTION:
     This program is made to ease the process of running BE-Meta simulations. 

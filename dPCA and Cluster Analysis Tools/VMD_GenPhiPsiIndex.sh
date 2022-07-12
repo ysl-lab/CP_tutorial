@@ -42,7 +42,7 @@ proc writeAtomList {ofp atomidList} {
 
 #############################################
 set numRes 6
-set GRO "equil_npt.gro"
+set GRO "prot.gro"
 
 set molid [ mol new $GRO type gro ]
 
