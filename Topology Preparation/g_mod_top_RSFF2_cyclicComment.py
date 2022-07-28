@@ -640,7 +640,6 @@ for i in range( Len ) :
     
         #As long as Arg is not at a terminus
         if has_Res_prev :
-      #      print("Made it to arginine previous")
             #Build RSFF2 dihedral for phi and phi prime of Arginine
             Dih.append( (Res_prev.C, Res.N, Res.CA, Res.C,  dih_R_phi) )
             Dih.append( (Res_prev.C, Res.N, Res.CA, Res.CB, dih_R_phi_) )
@@ -648,7 +647,6 @@ for i in range( Len ) :
             
         #As long as Arg is not at a terminus
         if has_Res_next :
-     #       print("Made it to arginine next")
             #Build RSFF2 dihedral for psi and psi prime of Arginine
             Dih.append( (Res.N,  Res.CA, Res.C, Res_next.N, dih_R_psi) )
             Dih.append( (Res.CB, Res.CA, Res.C, Res_next.N, dih_R_psi_) )
@@ -703,7 +701,6 @@ for i in range( Len ) :
     
         #As long as Phe is not at a terminus
         if has_Res_prev :
-   #         print("Made it to phenylalanine previous")
             #Build RSFF2 dihedral for phi and phi prime of Phenylalanine
             Dih.append( (Res_prev.C, Res.N, Res.CA, Res.C,  dih_F_phi) )
             Dih.append( (Res_prev.C, Res.N, Res.CA, Res.CB, dih_F_phi_) )
@@ -712,7 +709,6 @@ for i in range( Len ) :
             
         #As long as Phe is not at a terminus
         if has_Res_next :
-    #        print("Made it to phenylalanine next")
             #Build RSFF2 dihedral for psi and psi prime of Phenylalanine
             Dih.append( (Res.N,  Res.CA, Res.C, Res_next.N,  dih_F_psi) )
             Dih.append( (Res.CB, Res.CA, Res.C, Res_next.N, dih_F_psi_) )
@@ -817,7 +813,6 @@ for i in range( Len ) :
         
 	#As long as Thr is not at a terminus
 	if has_Res_prev :
-  #          print("Made it to threoning previous")
             #Build RSFF2 dihedral for phi and phi prime of Threonine
             Dih.append( (Res_prev.C, Res.N, Res.CA, Res.C,  dih_T_phi) )
             Dih.append( (Res_prev.C, Res.N, Res.CA, Res.CB, dih_T_phi_) )
@@ -827,7 +822,6 @@ for i in range( Len ) :
         
 	#As long as Thr is not at a terminus
 	if has_Res_next :
- #           print("Made it to threonine next")
             #Build RSFF2 dihedral for psi and psi prime of Threonine
             Dih.append( (Res.N,  Res.CA, Res.C, Res_next.N, dih_T_psi) )
             Dih.append( (Res.CB, Res.CA, Res.C, Res_next.N, dih_T_psi_) )
@@ -843,7 +837,6 @@ for i in range( Len ) :
 	
 	#As long as Ser is not at a terminus
         if has_Res_prev :
-#            print("Made it to serine previous")
             #Build RSFF2 dihedral for phi and phi prime of Serine
             Dih.append( (Res_prev.C, Res.N, Res.CA, Res.C,  dih_S_phi) )
             Dih.append( (Res_prev.C, Res.N, Res.CA, Res.CB, dih_S_phi_) )
@@ -852,7 +845,6 @@ for i in range( Len ) :
         
 	#As long as Ser is not at a terminus
 	if has_Res_next :
-#            print("Made it to serine next")
             #Build RSFF2 dihedral for psi and psi prime of Serine
             Dih.append( (Res.N,  Res.CA, Res.C, Res_next.N, dih_S_psi) )
             Dih.append( (Res.CB, Res.CA, Res.C, Res_next.N, dih_S_psi_) )
