@@ -3,7 +3,6 @@
 #This program takes an input topology using the modified Amber forcefield and outputs a converted topology using the RSFF2 forcefield. This program was modified to handle cyclic peptides but should also handle uncapped linear peptides and capped linear peptides.
 #Example usage: python g_mod_top_RSFF2_JD_0726Comment.py [input forcefield] [output forcefield]
 #          e.g. python g_mod_top_RSFF2_JD_0726Comment.py modifiedAmber.top RSFF2.top
-#On the cluster as of Feb 2022, this script will run after the command "module load python" (python 2.7.3).
 
 #If the script cannot find and replace the lines in the topology for forcefield.itp it will exit with an error.
 #If the script cannot find and replace the lines in the topology for tip3p.itp with the RSFF2 folder's version of this file, it will ask for your approval to continue (in case you are using a different water model, thus the tip3p.itp line would not be in the topology.
@@ -272,27 +271,27 @@ class Residue :
         #Search for the terminus NH3+
         if hasattr( self, 'H3' ) :
             self.ter = 'NH3+'
-            print self.i, self.aa, "Terminus NH3+"
+            print(self.i, self.aa, "Terminus NH3+")
             return
         if hasattr( self, 'H2') :
             self.ter = 'NH2'
-            print self.i, self.aa, "Terminus NH2"
+            print(self.i, self.aa, "Terminus NH2")
             return
         #Search for the terminus COOH
         if hasattr( self, 'OT' ) :
             self.ter = 'COOH'
             self.O1 = self.O
             self.O2 = self.OT
-            print self.i, self.aa, "Terminus COOH"
+            print(self.i, self.aa, "Terminus COOH")
             return
         #Search for the terminus COO-
         if hasattr( self, 'OC2' ) :
             self.ter = 'COO-'
-            print self.i, self.aa, "Terminus COO-"
+            print(self.i, self.aa, "Terminus COO-")
             return
         #Otherwise there is no program-supported terminus in this residue.
         self.ter = 'None'
-        print self.i, self.aa, "No terminus"
+        print(self.i, self.aa, "No terminus")
 #ReadibleProtein = []
 
 aa = "NULL"
@@ -346,14 +345,14 @@ for line in Lines :
 		if len(Anames) == i_atom :
 		    Anames.append( atom )
 		else :
-		    print 'Fatal Error: wrong atom numbers !'
+		    print('Fatal Error: wrong atom numbers !')
     
     #This triggers only in the line directly before any amino acid is listed in the topology.
     if ';   nr       type  resnr residue' in line :
         i_res_old = 0
 #Print the current status of the peptide.
 Len = len(Protein)
-print Len, 'residues  and ', len(Anames)-1, 'atoms'
+print(Len, 'residues  and ', len(Anames)-1, 'atoms')
 print('The input protein is:')
 #This is the structure of the input protein
 #readibleCounter =
@@ -362,12 +361,12 @@ print('The input protein is:')
 #Here we check if the residues we found are in the list of amino acids that RSFF2 is built for. If not, get user confirmation before continuing.
 for res in Protein:
 	if res.aa not in availRes:
-		print "Error: RSFF2 info on ", res.aa, "not available"
+		print("Error: RSFF2 info on ", res.aa, "not available")
         	isok = raw_input("If this is expected, type 'y'. All other inputs will exit the program: ")
         	if isok != 'y':
             		sys.exit()
     	if res.aa == 'VAL':
-        	print "\nNote: Valine detected, if using D-Valine, make sure that your structure correctly swaps Cg1 and Cg2 as discussed in Google Drive 0.Discrepancies...RSFF2_v4.\n"
+        	print("\nNote: Valine detected, if using D-Valine, make sure that your structure correctly swaps Cg1 and Cg2 as discussed in Google Drive 0.Discrepancies...RSFF2_v4.\n")
 
 
 #Determine what terminal residues exist using the Residue Class's function Get_Ter_Type()
@@ -409,7 +408,7 @@ for i in range( Len ) :
     has_Res_prev, has_Res_next = False, False
     #If residue already has a terminus, print it. This means that both has_Res_prev or has_Res_next will remain False for terminal residues.
     if Res.ter not in ['None']:
-        print Res.ter
+        print(Res.ter)
         
         #if Res.ter in ( 'NH3+' ) or Res.ter in ( 'NH2' ):
             #Res_next = Protein[i+1]
@@ -641,6 +640,7 @@ for i in range( Len ) :
     
         #As long as Arg is not at a terminus
         if has_Res_prev :
+      #      print("Made it to arginine previous")
             #Build RSFF2 dihedral for phi and phi prime of Arginine
             Dih.append( (Res_prev.C, Res.N, Res.CA, Res.C,  dih_R_phi) )
             Dih.append( (Res_prev.C, Res.N, Res.CA, Res.CB, dih_R_phi_) )
@@ -648,6 +648,7 @@ for i in range( Len ) :
             
         #As long as Arg is not at a terminus
         if has_Res_next :
+     #       print("Made it to arginine next")
             #Build RSFF2 dihedral for psi and psi prime of Arginine
             Dih.append( (Res.N,  Res.CA, Res.C, Res_next.N, dih_R_psi) )
             Dih.append( (Res.CB, Res.CA, Res.C, Res_next.N, dih_R_psi_) )
@@ -702,6 +703,7 @@ for i in range( Len ) :
     
         #As long as Phe is not at a terminus
         if has_Res_prev :
+   #         print("Made it to phenylalanine previous")
             #Build RSFF2 dihedral for phi and phi prime of Phenylalanine
             Dih.append( (Res_prev.C, Res.N, Res.CA, Res.C,  dih_F_phi) )
             Dih.append( (Res_prev.C, Res.N, Res.CA, Res.CB, dih_F_phi_) )
@@ -710,6 +712,7 @@ for i in range( Len ) :
             
         #As long as Phe is not at a terminus
         if has_Res_next :
+    #        print("Made it to phenylalanine next")
             #Build RSFF2 dihedral for psi and psi prime of Phenylalanine
             Dih.append( (Res.N,  Res.CA, Res.C, Res_next.N,  dih_F_psi) )
             Dih.append( (Res.CB, Res.CA, Res.C, Res_next.N, dih_F_psi_) )
@@ -814,6 +817,7 @@ for i in range( Len ) :
         
 	#As long as Thr is not at a terminus
 	if has_Res_prev :
+  #          print("Made it to threoning previous")
             #Build RSFF2 dihedral for phi and phi prime of Threonine
             Dih.append( (Res_prev.C, Res.N, Res.CA, Res.C,  dih_T_phi) )
             Dih.append( (Res_prev.C, Res.N, Res.CA, Res.CB, dih_T_phi_) )
@@ -823,6 +827,7 @@ for i in range( Len ) :
         
 	#As long as Thr is not at a terminus
 	if has_Res_next :
+ #           print("Made it to threonine next")
             #Build RSFF2 dihedral for psi and psi prime of Threonine
             Dih.append( (Res.N,  Res.CA, Res.C, Res_next.N, dih_T_psi) )
             Dih.append( (Res.CB, Res.CA, Res.C, Res_next.N, dih_T_psi_) )
@@ -838,6 +843,7 @@ for i in range( Len ) :
 	
 	#As long as Ser is not at a terminus
         if has_Res_prev :
+#            print("Made it to serine previous")
             #Build RSFF2 dihedral for phi and phi prime of Serine
             Dih.append( (Res_prev.C, Res.N, Res.CA, Res.C,  dih_S_phi) )
             Dih.append( (Res_prev.C, Res.N, Res.CA, Res.CB, dih_S_phi_) )
@@ -846,6 +852,7 @@ for i in range( Len ) :
         
 	#As long as Ser is not at a terminus
 	if has_Res_next :
+#            print("Made it to serine next")
             #Build RSFF2 dihedral for psi and psi prime of Serine
             Dih.append( (Res.N,  Res.CA, Res.C, Res_next.N, dih_S_psi) )
             Dih.append( (Res.CB, Res.CA, Res.C, Res_next.N, dih_S_psi_) )
@@ -987,21 +994,7 @@ for i in range( Len ) :
         Dih.append( (Res.C, Res.CA, Res.CB, Res.CG1, dih_I_chi1_) )
         Dih.append( (Res.CA, Res.CB, Res.CG1, Res.CD, dih_I_chi2) )
         Dih.append( (Res.CG2, Res.CB, Res.CG1, Res.CD, dih_Zeroes) )
-    
-    if Res.aa == 'THR' :       
-        Dih.append( (Res.N, Res.CA, Res.CB, Res.OG1, dih_T_chi1) )
-        Dih.append( (Res.CA, Res.CB, Res.CG, Res.CD2, dih_Hd_chi2_) )
-    
-    if Res.aa == 'VAL' :
-        Dih.append( (Res.N, Res.CA, Res.CB, Res.CG2, dih_V_chi1) )
-        Dih.append( (Res.C, Res.CA, Res.CB, Res.CG2, dih_V_chi1_) )
-        
-    if Res.aa == 'ILE' :
-        Dih.append( (Res.N, Res.CA, Res.CB, Res.CG1, dih_I_chi1) )
-        Dih.append( (Res.C, Res.CA, Res.CB, Res.CG1, dih_I_chi1_) )
-        Dih.append( (Res.CA, Res.CB, Res.CG1, Res.CD, dih_I_chi2) )
-        Dih.append( (Res.CG2, Res.CB, Res.CG1, Res.CD, dih_Zeroes) )
-    
+       
     if Res.aa == 'THR' :       
         Dih.append( (Res.N, Res.CA, Res.CB, Res.OG1, dih_T_chi1) )
         Dih.append( (Res.C, Res.CA, Res.CB, Res.OG1, dih_T_chi1_) )
@@ -1104,7 +1097,6 @@ for line in Lines :
         in_pairs = False
         #Cycle through our list of new pairs, and add the atom numbers and the comment.
         for each in Pair_15 :
-            print
             NewLines.append( '%5i %5i' %(each[0],each[1]) )
             NewLines.append( each[2] + '\n' )
             
