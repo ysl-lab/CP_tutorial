@@ -4,7 +4,7 @@
 #Updated by Kevin Schult March-July 2020 with contribution from Tim Ling
 #File to create a chimera script which creates a random pdb structure
 #
-#Edit and revised
+#Edited and revised
 #Minh N. Ho, August 2022
 #
 #NOTE: Errors that are produced by Chimera are sent to a log file, not to

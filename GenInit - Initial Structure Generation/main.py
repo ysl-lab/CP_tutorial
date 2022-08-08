@@ -4,7 +4,7 @@
 #Edited and updated to version 2
 #Kevin Schult, March/April 2020
 #
-#Edit and revised
+#Edited and revised
 #Minh N. Ho, August 2022
 #
 #Main function. Able to create initial sequences for a given sequence passed by the user.
