@@ -3,12 +3,19 @@
 #
 #Updated by Kevin Schult March-July 2020 with contribution from Tim Ling
 #File to create a chimera script which creates a random pdb structure
-
+#
+#Edit and revised
+#Minh N. Ho, August 2022
+#
 #NOTE: Errors that are produced by Chimera are sent to a log file, not to
 #the console. Check everything and make sure that the logs make sense.
 
 import os
 import numpy as np
+
+# NOTE: make sure to specify a binary executable to chimera
+# For example: chimeraBinaryExecPath=/cluster/tufts/ylin12/tim/UCSF-Chimera64-1.14/bin/chimera"
+chimeraBinaryExecPath="/path/to/chimera_X.Y.Z/bin/chimera"
 
 #File to create a chimera script to create a structure with amino acids in "seq", and with the
 #passed phi/psi angles
@@ -148,8 +155,7 @@ def invertBadChiralities(structNum, newSeq, verbose):
     damino.close()
 
     if errorFound:
-        # Planning to change path to chimera:
-        os.system("/cluster/tufts/ylin12/tim/UCSF-Chimera64-1.14/bin/chimera --script " + scriptName + " --nogui &> s%d.dChimOut" % structNum)
+        os.system(chimeraBinaryExecPath + " --script " + scriptName + " --nogui &> s%d.dChimOut" % structNum)
     else:
         dChimOut = open("s%d.dChimOut" % structNum, "w")
         dChimOut.write("No chirality errors found by chimera")

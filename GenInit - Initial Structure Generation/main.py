@@ -1,9 +1,12 @@
 #Aidan Fike
 #July 21, 2019
-
+#
 #Edited and updated to version 2
 #Kevin Schult, March/April 2020
-
+#
+#Edit and revised
+#Minh N. Ho, August 2022
+#
 #Main function. Able to create initial sequences for a given sequence passed by the user.
 #See README for more information
 
@@ -17,6 +20,10 @@ import chimScriptMaker
 import os
 import shutil
 import networkx as nx
+
+# NOTE: make sure to specify a binary executable to chimera
+# For example: chimeraBinaryExecPath=/cluster/tufts/ylin12/tim/UCSF-Chimera64-1.14/bin/chimera"
+chimeraBinaryExecPath="/path/to/chimera_X.Y.Z/bin/chimera"
 
 def main():
     #Parse command line arguments/obtain the sequence whose structures will be made
@@ -62,7 +69,7 @@ If you wish to end and delete all structures, enter 'end'.\n")
         phi, psi = dihedDir.createRandomPhiPsi(1, newSeq)
         dihedDir.writeToDihedFile(newSeq, phi[0], psi[0], structNum)
         scriptName = chimScriptMaker.createChimScript(newSeq, phi[0], psi[0], bonds, structNum, debug)
-        os.system("/cluster/tufts/ylin12/tim/UCSF-Chimera64-1.14/bin/chimera --script " + scriptName + " --nogui &> s%d.chimOut" % structNum)
+        os.system(chimeraBinaryExecPath + " --script " + scriptName + " --nogui &> s%d.chimOut" % structNum)
         os.remove(scriptName)
         chimScriptMaker.adjustStructFile(structNum, newSeq, verbose, debug)
 

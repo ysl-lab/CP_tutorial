@@ -87,3 +87,5 @@ PROGRAM DESCRIPTION:
     attempts, terminate while saving valid structures, or terminate without
     saving valid structures.
     
+    Finally, this program assumes users have installed Chimera. Please specify the path
+    to the Chimera executable in main.py and code/chimScriptMaker.py.
