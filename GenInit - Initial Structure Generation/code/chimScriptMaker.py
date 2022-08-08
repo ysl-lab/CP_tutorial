@@ -148,6 +148,7 @@ def invertBadChiralities(structNum, newSeq, verbose):
     damino.close()
 
     if errorFound:
+        # Planning to change path to chimera:
         os.system("/cluster/tufts/ylin12/tim/UCSF-Chimera64-1.14/bin/chimera --script " + scriptName + " --nogui &> s%d.dChimOut" % structNum)
     else:
         dChimOut = open("s%d.dChimOut" % structNum, "w")
