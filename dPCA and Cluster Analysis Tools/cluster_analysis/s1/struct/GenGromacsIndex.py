@@ -20,7 +20,7 @@ for line in lines:
 
 i = 0
 for idx in index:
-  print "[ state %d ]"%i
+  print "[ state_%d ]"%i
   ic = 0
   for ix in idx:
     print "%10d"%ix,
