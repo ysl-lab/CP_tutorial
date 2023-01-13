@@ -15,4 +15,4 @@ for i in ${traj[@]}; do
    cd ..
 done
 
-gmx_mpi trjcat -f s1${PROT}_all.trr s2${PROT}_all.trr -cat -o all.trr &> combined.txt
+gmx_mpi trjcat -f s1${PROT}_all.trr s2${PROT}_all.trr -cat -nosort -o all.trr &> combined.txt
