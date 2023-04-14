@@ -1,2 +1,5 @@
 # CP_tutorial
-Introduction to cyclic peptide simulations and our group's protocols.
+This public GitHub repository provides a tutorial for setting-up BE-META simulations of cyclic peptides. 
+•	To access the step-by-step tutorials, please see the Word documents in the /Tutorials directory, which includes documents with step-by-step explanations for building cyclic peptides in Chimera, solvating and equilibrating the cyclic peptide in GROMACS using the RSFF2 forcefield, setting-up the BE-META simulation, and analyzing the trajectories using dihedral PCA and grid-based density-peak based clustering in MATLAB. The tutorial documents will also reference scripts that our group has developed, which are also included in the GitHub repository. 
+•	Scripts that reference other software (for example, we have a script called chimScriptMaker.py that will use Chimera to build cyclic peptides) have a line (with comments) at the start of the code that will point to the directory that the software is installed, and this line should be updated according to where the user has installed the software.
+
