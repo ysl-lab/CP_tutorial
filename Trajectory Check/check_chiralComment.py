@@ -3,7 +3,6 @@
 #and output a .xvg file containing the angles for each residue for each frame in the trajectory.
 #Finally, the script will read this .xvg file and check if any angle is below a threshold angle, such 
 #that the angle would be classified as "cis".
-#Feb 2022, This script runs after loading Gromacs and required packages (gcc/4.9.2, openmpi/2.1.2, and cuda/8.0.44, as well as loading "module load python/3.6.0", I have found issues with "module load python", which loads python 2.7.3 or more directly "module load python/2.7.3", which appears to disrupt Gromacs.
 
 import optparse
 import numpy as np
@@ -138,7 +137,7 @@ if __name__ == "__main__":
     for i in range(int(length)):
         if chirality_gly[i] ==1 or chirality_caps[i] ==1:
             chirality[i] =1
-    print(chirality)
+    print("L amino acids are 1, D are 0, for testing\n", chirality,test_vec)
 #For each residue, find its' atoms that define its' improper related to chirality. 
 #For example, residue i would need the atom indices corresponding to CAi, Ni, Ci, and CBi.
 #These definitions don't exist for Glycine and capped residues that don't have beta C.
@@ -168,7 +167,7 @@ if __name__ == "__main__":
 
     #Execute GROMACS command using the generated index file. Output are 2 .xvg files. the XXX_omega.xvg contains the improper angles for each residue at each frame 
     #and the XXX_angdist.xvg contains a distribution fo the angles (which is not what we need for chirality, but gromacs will output it by default).
-    os.system("gmx_mpi angle -f "+trj+" -n "+indexName+" -ov "+angleXVGFile+" -od "+angdistFile+" -all -xvg none -type dihedral  &> "+baseName[0]+"_GromacsChiral.log")
+    os.system("gmx_mpi angle -f "+trj+" -n "+indexName+" -ov "+angleXVGFile+" -od "+angdistFile+" -all -xvg none -type dihedral &> "+baseName[0]+"_GromacsChiral.log")
     print(list(range(2,length+2)))
     Angles = np.loadtxt(angleXVGFile,usecols=list(range(2,length+2)))
     #NOTE THAT BADANGLES IS ZERO INDEXED
@@ -185,40 +184,42 @@ if __name__ == "__main__":
                 pass
             #For L chirality
             elif test_vec[j] == 1:
+                #print("looking for L", j)
                 if Angles[i,j] < 0:
                     BadAngles.append([i,j])
                 if abs(Angles[i,j]) == 0:
-                    print("Error: Inconclusive Chirality for frame:",str(i),", residue:",str(j+1), ", angle:",Angles[i,j],".")
+                    print("Error: Inconclusive Chirality for frame:",str(i+1),", residue:",str(j+1), ", angle:",Angles[i,j],".")
                     
             #For D chirality
             else:
+                #print("looking for D", j)
                 if Angles[i,j] > 0:
                     BadAngles.append([i,j])
                 if abs(Angles[i,j]) == 0:
-                    print("Error: Inconclusive Chirality for frame:",str(i),", residue:",str(j+1), ", angle:",Angles[i,j],".")
+                    print("Error: Inconclusive Chirality for frame:",str(i+1),", residue:",str(j+1), ", angle:",Angles[i,j],".")
             
     #print(BadAngles)
     #Show the user which frames and residues have bad chirality
     for Angle in BadAngles:
-        print("Residue", Angle[1]+1, "in frame",Angle[0],"has incorrect chirality")
+        print("Residue", Angle[1]+1, "in frame",Angle[0]+1,"has incorrect chirality")
 
     #Calculate the percent of frames where at least one residue has an incorrect chirality.
-    print("Percent of frames with bad chirality is ", 100*float(len(set(list(i[0] for i in BadAngles)))/len(Angles[:,0])))
+    print("Percent of frames with bad chirality is ", 100*float(len(set(list(i[0] for i in BadAngles)))/float(len(Angles[:,0]))))
     #Separate the frames into those with all good chiralities, and those with at least one bad chirality.
     GoodIndex = []
     BadIndex = list(set(list(i[0] for i in BadAngles)))
-    for i in range(1,len(Angles[:,0])+1):
+    for i in range(len(Angles[:,0])):
         if i not in BadIndex:
             GoodIndex.append(i)
     #Save to an index file the frames that are not problematic.
     with open(baseName[0]+"_good_chirality.ndx",'w') as outfile:
         outfile.write(" [frame] \n")
         for i in GoodIndex:
-            outfile.write(str(i)+"\n")
+            outfile.write(str(i+1)+"\n")
     #Save to an index file the frames that have at least one bad chirality.
     with open(baseName[0]+"_bad_chirality.ndx",'w') as outfile:
         outfile.write(" [frame] \n")
         for i in BadIndex:
-            outfile.write(str(i)+"\n")
+            outfile.write(str(i+1)+"\n")
 
     print("The analyzed sequence had", sum(chirality_gly), "glycines, and",sum(chirality_caps),"caps identified") 

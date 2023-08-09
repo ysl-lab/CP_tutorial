@@ -3,7 +3,6 @@
 #and output a .xvg file containing the omega angles for each residue for each frame in the trajectory.
 #Finally, the script will read this .xvg file and check if any angle is below a threshold angle, such 
 #that the angle would be classified as "cis".
-#Feb 2022, This script runs after loading Gromacs and required packages (gcc/4.9.2, openmpi/2.1.2, and cuda/8.0.44, as well as loading "module load python/3.6.0", I have found issues with "module load python", which loads python 2.7.3 or more directly "module load python/2.7.3", which appears to disrupt Gromacs.
 
 import optparse
 import numpy as np
@@ -83,15 +82,10 @@ if __name__ == "__main__":
     length, atom_dic = get_omega_atoms(gro)
     omegas = []
     length= int(length)
-    print("Input peptide length: ",length)
-    if cyclic:
-        print("You have chosen to analyze a cyclic peptide")
-    else:
-        print("You have chosen to analyze a linear peptide")
+    print(length)
     #First check if the peptide is capped with ACE and/or NME.
     N_cap,C_cap= get_caps(gro)
-    print("N cap boolean is: ",N_cap)
-    print("C cap boolean is: ",C_cap)
+
     #For each residue, find its' atoms that define its' omega angle. 
     #For example, residue i would need the atom indices corresponding to CAi, Ci, Ni+1, and CAi+2.
     #These definitions are a little different for capped peptides.
@@ -108,9 +102,9 @@ if __name__ == "__main__":
             omegas.append(dihedral)
         if C_cap:
             dihedral="%5s %5s %5s %5s" %(atom_dic["CA" + str(length-1)] ,atom_dic["C" + str(length-1)], \
-            atom_dic["N" + str(length)],atom_dic["CH3" + str(length) ])
+            atom_dic["N" + str(length)],atom_dic["CA" + str(length) ])
             omegas.append(dihedral)
-        if not C_cap:
+        if C_cap:
             dihedral="%5s %5s %5s %5s" %(atom_dic["CA" + str(length-1)] ,atom_dic["C" + str(length-1)], \
             atom_dic["N" + str(length)],atom_dic["CA" + str(length)])
             omegas.append(dihedral)
@@ -122,7 +116,7 @@ if __name__ == "__main__":
             omegas.append(dihedral)
 
         dihedral="%5s %5s %5s %5s" %(atom_dic["CA" + str(length-1)] ,atom_dic["C" + str(length-1)], \
-        atom_dic["N" + str(length)],atom_dic["CH3" + str(length) ])
+        atom_dic["N" + str(length)],atom_dic["CA" + str(length) ])
         omegas.append(dihedral)
 
 
@@ -143,7 +137,7 @@ if __name__ == "__main__":
     #Naming of input .ndx files. 
     baseName = trj.split(".")
     indexName = baseName[0]+"_omega.ndx"
-    print("Save name based on",trj,"is: ",baseName[0])
+    print(baseName[0])
     angleXVGFile = baseName[0]+"_omega.xvg"
     angdistFile = baseName[0]+"_angdist.xvg"
 
@@ -163,45 +157,35 @@ if __name__ == "__main__":
     BadAngles = []
     #print(len(Angles[:,0]))
     #Fix an issue with "not enough dimensions" if dealing with a gro file
-    print("Shape of angles: ",np.shape(Angles))
     if gro == trj:
-        print("Analyzing just a .gro file")
         Angles = Angles[np.newaxis]
-        print("Angles shape is now :",np.shape(Angles))
-    print("Analyzing",len(Angles[:,0]),"frames")
+    print(len(Angles[:,0]))
     #Scan through every angle and frame in the collected omega angles array and check each one against the cutoff.
     for i in range(len(Angles[:,0])):
-        if cyclic:
-            for j in range(length):
-                if abs(Angles[i,j]) < int(cutoff):
-                    BadAngles.append([i,j])
-        else:
-            for j in range(length-1):
-                if abs(Angles[i,j]) < int(cutoff):
-                    BadAngles.append([i,j]) 
+        for j in range(length):
+            if abs(Angles[i,j]) < int(cutoff):
+                BadAngles.append([i,j])
+
     #print(BadAngles)
     #Ensure the user sees any problematic angles
     for Angle in BadAngles:
-        print("Angle", Angle[1], "in frame",Angle[0],"is cis")
+        print("Angle", Angle[1], "in frame",Angle[0]+1,"is cis")
 
     #Calculate the percent of frames one or more cis bonds
-    print("Percent of frames with cis bonds is:", 100*float(len(set(list(i[0] for i in BadAngles)))/len(Angles[:,0])),"%")
+    print("Percent of frames with cis bonds is:", 100*float(len(set(list(i[0] for i in BadAngles)))/float(len(Angles[:,0]))),"%")
 
     #Now collect any frames that have at least one cis bond in CisAngles, and any frames that are not in CisAngles in TransAngles
     TransIndex = []
     CisIndex = list(set(list(i[0] for i in BadAngles)))
-    for i in range(1,len(Angles[:,0])+1):
+    for i in range(len(Angles[:,0])):
         if i not in CisIndex:
             TransIndex.append(i)
-    print("Writing _cis.ndx and _trans.ndx ...")
     #Write the frames to a .ndx file so that a user could filter their trajectory. This is only really helpful for .xtc analyses.
     with open(baseName[0]+"_trans.ndx",'w') as outfile:
         outfile.write(" [frame] \n")
         for i in TransIndex:
-            outfile.write(str(i)+"\n")
+            outfile.write(str(i+1)+"\n")
     with open(baseName[0]+"_cis.ndx",'w') as outfile:
         outfile.write(" [frame] \n")
         for i in CisIndex:
-            outfile.write(str(i)+"\n")
-    print("Analysis Complete!")
-
+            outfile.write(str(i+1)+"\n")
