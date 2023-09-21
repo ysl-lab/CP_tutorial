@@ -49,7 +49,7 @@ end
 for i=1:ND-1
   for j=i+1:ND
      rho(i)=rho(i)+densit(j)*exp(-(dist(i,j)/dc)*(dist(i,j)/dc));
-     rho(j)=rho(j)+densit(j)*exp(-(dist(i,j)/dc)*(dist(i,j)/dc));
+     rho(j)=rho(j)+densit(i)*exp(-(dist(i,j)/dc)*(dist(i,j)/dc));
   end
 end
 %
